@@ -1,2 +1,4 @@
 node_modules
+public/js/admin.js
+public/js/player.js
 .env
