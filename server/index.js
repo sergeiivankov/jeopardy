@@ -16,6 +16,13 @@ app.use(compression());
 app.use(express.static('public', { redirect: false }));
 
 const port = parseInt(process.env.JEOPARDY_PORT, 10);
-app.listen(port, () => {
-  console.log(`App listening on port ${port}`);
+const server = app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});
+
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received');
+  server.close(() => {
+    console.log('Server closed')
+  });
 });
