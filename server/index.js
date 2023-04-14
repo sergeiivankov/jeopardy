@@ -5,9 +5,9 @@ import { readFileSync } from 'fs';
 import helmet from 'helmet';
 import { createServer as createServerHttp } from 'http';
 import { createServer as createServerHttps } from 'https';
-import morgan from 'morgan';
 import errorsHandle from './helpers/errors-handle.js';
 import gracefulShutdown from './helpers/graceful-shutdown.js';
+import logger from './helpers/logger.js';
 import strictRoutes from './helpers/strict-routes.js';
 
 dotenv.config();
@@ -16,7 +16,7 @@ const app = express();
 app.enable('case sensitive routing');
 app.enable('strict routing');
 
-app.use(morgan('[:date[iso]] :remote-addr :method :url :status :response-time[3]ms :user-agent'));
+app.use(logger());
 app.use(helmet());
 app.use(strictRoutes);
 app.use(compression());
