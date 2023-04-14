@@ -3,12 +3,12 @@ export default servers => {
     console.log(reason + ' happened');
     if(err) console.error(err);
 
-    servers.server.close(() => {
+    servers.appServer.close(() => {
       console.log('Server closed');
     });
 
-    if(servers.httpsRedirectServer) {
-      servers.httpsRedirectServer.close(() => {
+    if(servers.redirectServer) {
+      servers.redirectServer.close(() => {
         console.log('HTTPS redirect server closed');
       });
     }
