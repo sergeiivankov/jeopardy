@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
 
   import Auth from '../common/Auth.svelte';
+  import Games from './Games.svelte';
   import Users from './Users.svelte';
   import { token, isAdmin, setToken, setIsAdmin } from '../common/auth.js';
   import { setBaseURL, get } from '../common/request.js';
@@ -59,7 +60,7 @@
 
   <div class="container mt-5">
     {#if page == 'games'}
-      <h1>GAMES</h1>
+      <Games/>
     {/if}
     {#if page == 'users'}
       <Users/>

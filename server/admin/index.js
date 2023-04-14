@@ -4,6 +4,7 @@ import { sendHtmlFile } from '../helpers/common.js';
 import { getUserIdByToken } from '../models/user.js';
 
 import usersRouter from './users.js';
+import gamesRouter from './games.js';
 
 const router = Router();
 
@@ -32,6 +33,7 @@ router.get('/check', (req, res) => {
   res.json({ ok: true, res: res.locals.userId === 0 });
 });
 
+router.use('/games', gamesRouter);
 router.use('/users', usersRouter);
 
 export default router;

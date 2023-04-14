@@ -56,9 +56,9 @@
     <tbody>
       {#each users as user}
         <tr>
-          <td>{user.id}</td>
-          <td>{user.name}</td>
-          <td>{user.password}</td>
+          <td>{ user.id }</td>
+          <td>{ user.name }</td>
+          <td>{ user.password }</td>
           <td class="is-narrow">
             <a href="#" class="link has-text-info"
                on:click|preventDefault={ () => editUser = { ...user } }>Изменить</a>

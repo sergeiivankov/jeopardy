@@ -3,7 +3,7 @@ export const getUserIdByToken = async token => {
   return user?.id;
 };
 
-export const getAllUsers = async () => {
+export const getUsers = async () => {
   return await DB.all('SELECT id, name, password FROM users ORDER BY name ASC');
 };
 
