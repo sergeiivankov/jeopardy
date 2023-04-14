@@ -11,7 +11,7 @@ app.enable('strict routing');
 
 app.use(strictRoutes);
 app.use(compression());
-app.use(express.static('public'));
+app.use(express.static('public', { redirect: false }));
 
 const port = parseInt(process.env.JEOPARDY_PORT, 10);
 app.listen(port, () => {
