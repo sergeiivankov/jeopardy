@@ -20,7 +20,7 @@ router.use(asyncHandler(async (req, res, next) => {
 }));
 
 router.get('/check', (req, res) => {
-  res.json({ success: true });
+  res.json({ ok: true });
 });
 
 export default router;

@@ -1,4 +1,4 @@
-import { token } from './token.js';
+import { token } from './auth.js';
 
 let baseURL = '';
 
@@ -27,7 +27,14 @@ export const get = async (path, alertUnauthorized = true) => {
       return null;
     }
 
-    return await response.json();
+    const data = await response.json();
+
+    if(!data.ok) {
+      alert('Ошибка запроса: ' + data.err);
+      return null;
+    }
+
+    return data.res;
   } catch(err) {
     alert('Ошибка: ' + JSON.stringify(err));
     return null;

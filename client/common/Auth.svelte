@@ -1,8 +1,8 @@
 <script>
   import { createEventDispatcher } from 'svelte';
 
+  import { setToken, setIsAdmin } from './auth.js';
   import { get } from './request.js';
-  import { setToken } from './token.js';
 
   const dispatch = createEventDispatcher();
 
@@ -12,12 +12,14 @@
     setToken(password);
 
     const result = await get('/check', false);
-    if(!result) {
+    if(result === null) {
       setToken(null);
       password = '';
       alert('Неверный пароль');
       return;
     }
+
+    setIsAdmin(result);
 
     dispatch('authorized');
   };

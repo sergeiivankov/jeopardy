@@ -2,25 +2,34 @@
   import { onMount } from 'svelte';
 
   import Auth from '../common/Auth.svelte';
+  import { token, isAdmin, setToken, setIsAdmin } from '../common/auth.js';
   import { setBaseURL, get } from '../common/request.js';
-  import { token, setToken } from '../common/token.js';
 
   setBaseURL('/admin');
 
   let page = null;
 
+  const logout = () => {
+    setToken(null);
+    page = 'auth';
+  };
+
   onMount(async () => {
 		if(!token) {
+      setToken(null);
+      setIsAdmin(false);
       page = 'auth';
       return;
     }
 
     const result = await get('/check', false);
-    if(!result) {
+    if(result === null) {
       setToken(null);
       page = 'auth';
       return;
     }
+
+    setIsAdmin(result);
 
     page = 'games';
 	});
@@ -28,8 +37,26 @@
 
 {#if page == 'auth'}
   <Auth on:authorized={ () => page = 'games' }/>
-{/if}
+{:else}
+  <div class="navbar is-light">
+    <div class="container">
+      <div class="navbar-menu">
+        <div class="navbar-start">
+          <a href="#" class="navbar-item" class:is-active={ page == 'games' }
+             on:click|preventDefault={ () => page = 'games' }>Игры</a>
+          {#if $isAdmin}
+            <a href="#" class="navbar-item" class:is-active={ page == 'players' }
+               on:click|preventDefault={ () => page = 'players' }>Игроки</a>
+          {/if}
+        </div>
+        <div class="navbar-end">
+          <a href="#" class="navbar-item" on:click|preventDefault={ logout }>Выйти</a>
+        </div>
+      </div>
+    </div>
+  </div>
 
-{#if page == 'games'}
-  <h1>GAMES</h1>
+  {#if page == 'games'}
+    <h1>GAMES</h1>
+  {/if}
 {/if}
