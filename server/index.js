@@ -2,6 +2,7 @@ import compression from 'compression';
 import * as dotenv from 'dotenv';
 import express from 'express';
 import helmet from 'helmet';
+import morgan from 'morgan';
 import errorsHandle from './helpers/errors-handle.js';
 import gracefulShutdown from './helpers/graceful-shutdown.js';
 import strictRoutes from './helpers/strict-routes.js';
@@ -12,6 +13,7 @@ const app = express();
 app.enable('case sensitive routing');
 app.enable('strict routing');
 
+app.use(morgan('[:date[iso]] :remote-addr :method :url :status :response-time[3]ms :user-agent'));
 app.use(helmet());
 app.use(strictRoutes);
 app.use(compression());
