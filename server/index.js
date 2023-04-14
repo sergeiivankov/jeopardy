@@ -1,7 +1,10 @@
 import compression from 'compression';
 import * as dotenv from 'dotenv';
 import express from 'express';
+import { readFileSync } from 'fs';
 import helmet from 'helmet';
+import { createServer as createServerHttp } from 'http';
+import { createServer as createServerHttps } from 'https';
 import morgan from 'morgan';
 import errorsHandle from './helpers/errors-handle.js';
 import gracefulShutdown from './helpers/graceful-shutdown.js';
@@ -24,9 +27,21 @@ app.use(express.static('public', { redirect: false }));
 errorsHandle(app);
 
 const port = parseInt(process.env.JEOPARDY_PORT, 10);
-const server = app.listen(port, () => {
+
+let server;
+
+if(process.env.JEOPARDY_SECURE_CERT) {
+  const cert = readFileSync(process.env.JEOPARDY_SECURE_CERT, 'utf8');
+  const key = readFileSync(process.env.JEOPARDY_SECURE_KEY, 'utf8');
+
+  server = createServerHttps({ cert, key }, app);
+} else {
+  server = createServerHttp(app);
+}
+
+server.setTimeout(15000);
+server.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
-server.setTimeout(15000);
 
 gracefulShutdown(server);
