@@ -2,6 +2,7 @@ import compression from 'compression';
 import * as dotenv from 'dotenv';
 import express from 'express';
 import helmet from 'helmet';
+import errorsHandle from './helpers/errors-handle.js';
 import strictRoutes from './helpers/strict-routes.js';
 
 dotenv.config();
@@ -14,6 +15,10 @@ app.use(helmet());
 app.use(strictRoutes);
 app.use(compression());
 app.use(express.static('public', { redirect: false }));
+
+// ROUTES HERE
+
+errorsHandle(app);
 
 const port = parseInt(process.env.JEOPARDY_PORT, 10);
 const server = app.listen(port, () => {
