@@ -1,11 +1,17 @@
-export default server => {
+export default servers => {
   const gracefulShutdown = (reason, err) => {
     console.log(reason + ' happened');
     if(err) console.error(err);
 
-    server.close(() => {
+    servers.server.close(() => {
       console.log('Server closed');
     });
+
+    if(servers.httpsRedirectServer) {
+      servers.httpsRedirectServer.close(() => {
+        console.log('HTTPS redirect server closed');
+      });
+    }
   };
 
   process.on('SIGINT', () => gracefulShutdown('SIGINT'));

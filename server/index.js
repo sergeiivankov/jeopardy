@@ -26,8 +26,6 @@ app.use(express.static('public', { redirect: false }));
 
 errorsHandle(app);
 
-const port = parseInt(process.env.JEOPARDY_PORT, 10);
-
 let server;
 
 if(process.env.JEOPARDY_SECURE_CERT) {
@@ -39,9 +37,27 @@ if(process.env.JEOPARDY_SECURE_CERT) {
   server = createServerHttp(app);
 }
 
+const port = parseInt(process.env.JEOPARDY_PORT, 10);
+
 server.setTimeout(15000);
 server.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
 
-gracefulShutdown(server);
+const servers = { server };
+
+if(process.env.JEOPARDY_HTTPS_REDIRECT_SERVER) {
+  const httpsRedirectServer = createServerHttp((req, res) => {
+    const url = new URL(req.url, `https://${req.headers.host}`);
+    res.writeHead(301, { 'Location': url.toString() }).end();
+  });
+
+  httpsRedirectServer.setTimeout(15000);
+  httpsRedirectServer.listen(80, () => {
+    console.log(`HTTPS redirect server listening on port 80`);
+  });
+
+  servers.httpsRedirectServer = httpsRedirectServer;
+}
+
+gracefulShutdown(servers);
