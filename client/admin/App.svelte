@@ -1,40 +1,33 @@
 <script>
   import { onMount } from 'svelte';
 
+  import Auth from '../common/Auth.svelte';
   import { setBaseURL, get } from '../common/request.js';
-  import { token, setToken } from '../common/storage/token.js';
+  import { token, setToken } from '../common/token.js';
 
   setBaseURL('/admin');
 
   let page = null;
 
   onMount(async () => {
-		if(!token) page = 'auth';
-    else {
-      const result = await get('/check', false);
-      if(!result) {
-        page = 'auth';
-        setToken(null);
-      }
-      else page = 'games';
+		if(!token) {
+      page = 'auth';
+      return;
     }
+
+    const result = await get('/check', false);
+    if(!result) {
+      setToken(null);
+      page = 'auth';
+      return;
+    }
+
+    page = 'games';
 	});
 </script>
 
 {#if page == 'auth'}
-  <div class="hero is-fullheight">
-    <div class="hero-body">
-      <div class="container is-flex is-justify-content-center has-text-centered">
-        <div style="max-width:400px;width:100%">
-          <div class="title">Авторизация</div>
-          <div class="field">
-            <input type="password" class="input" placeholder="Пароль" autocomplete="off">
-          </div>
-          <button class="button is-link">Войти</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <Auth on:authorized={ () => page = 'games' }/>
 {/if}
 
 {#if page == 'games'}

@@ -19,4 +19,8 @@ router.use(asyncHandler(async (req, res, next) => {
   res.sendStatus(401);
 }));
 
+router.get('/check', (req, res) => {
+  res.json({ success: true });
+});
+
 export default router;

@@ -1,4 +1,4 @@
-import { token } from './storage/token.js';
+import { token } from './token.js';
 
 let baseURL = '';
 
