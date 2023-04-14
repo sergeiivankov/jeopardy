@@ -1,5 +1,3 @@
-import db from './database.js';
-
 export default servers => {
   let exitCounter = 0;
   const tryExit = code => {
@@ -26,7 +24,7 @@ export default servers => {
       });
     }
 
-    db.close().then(() => {
+    DB.close().then(() => {
       console.log('Database connection closed');
       tryExit(exitCode);
     });
