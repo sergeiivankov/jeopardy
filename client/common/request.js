@@ -4,13 +4,17 @@ let baseURL = '';
 
 export const setBaseURL = value => baseURL = value;
 
-export const get = async (path, alertUnauthorized = true) => {
+const request = async (method, path, body = null, alertUnauthorized = true) => {
   try {
-    const response = await fetch(baseURL + path, {
-      headers: {
-        Authorization: token
-      }
-    });
+    const options = {};
+    options.method = method;
+    options.headers = { Authorization: token };
+    if(body !== null) {
+      options.headers['Content-Type'] = 'application/json';
+      options.body = body;
+    }
+
+    const response = await fetch(baseURL + path, options);
 
     if(response.status === 401) {
       if(alertUnauthorized) alert('Ошибка авторизации');
@@ -30,7 +34,7 @@ export const get = async (path, alertUnauthorized = true) => {
     const data = await response.json();
 
     if(!data.ok) {
-      alert('Ошибка запроса: ' + data.err);
+      alert(data.err);
       return null;
     }
 
@@ -39,4 +43,20 @@ export const get = async (path, alertUnauthorized = true) => {
     alert('Ошибка: ' + JSON.stringify(err));
     return null;
   }
+};
+
+export const get = async (path, alertUnauthorized = true) => {
+  return await request('GET', path, null, alertUnauthorized);
+};
+
+export const post = async (path, body) => {
+  return await request('POST', path, JSON.stringify(body));
+};
+
+export const put = async (path, body) => {
+  return await request('PUT', path, JSON.stringify(body));
+};
+
+export const del = async path => {
+  return await request('DELETE', path);
 };

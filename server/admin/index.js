@@ -3,6 +3,8 @@ import asyncHandler from 'express-async-handler';
 import { sendHtmlFile } from '../helpers/common.js';
 import { getUserIdByToken } from '../models/user.js';
 
+import usersRouter from './users.js';
+
 const router = Router();
 
 router.get('/', (req, res) => {
@@ -29,5 +31,7 @@ router.use(asyncHandler(async (req, res, next) => {
 router.get('/check', (req, res) => {
   res.json({ ok: true, res: res.locals.userId === 0 });
 });
+
+router.use('/users', usersRouter);
 
 export default router;

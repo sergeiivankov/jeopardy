@@ -13,7 +13,7 @@ import logger from './helpers/logger.js';
 import strictRoutes from './helpers/strict-routes.js';
 
 import adminRouter from './admin/index.js';
-import playerRouter from './player/index.js';
+import userRouter from './user/index.js';
 
 const app = express();
 app.enable('case sensitive routing');
@@ -25,9 +25,10 @@ app.use(strictRoutes);
 hideDirectStatic(app);
 app.use(compression());
 app.use(express.static('public', { index: false, redirect: false }));
+app.use(express.json());
 
 app.use('/admin', adminRouter);
-app.use('/', playerRouter);
+app.use('/', userRouter);
 
 errorsHandle(app);
 

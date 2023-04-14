@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
 
   import Auth from '../common/Auth.svelte';
+  import Users from './Users.svelte';
   import { token, isAdmin, setToken, setIsAdmin } from '../common/auth.js';
   import { setBaseURL, get } from '../common/request.js';
 
@@ -45,8 +46,8 @@
           <a href="#" class="navbar-item" class:is-active={ page == 'games' }
              on:click|preventDefault={ () => page = 'games' }>Игры</a>
           {#if $isAdmin}
-            <a href="#" class="navbar-item" class:is-active={ page == 'players' }
-               on:click|preventDefault={ () => page = 'players' }>Игроки</a>
+            <a href="#" class="navbar-item" class:is-active={ page == 'users' }
+               on:click|preventDefault={ () => page = 'users' }>Пользователи</a>
           {/if}
         </div>
         <div class="navbar-end">
@@ -56,7 +57,12 @@
     </div>
   </div>
 
-  {#if page == 'games'}
-    <h1>GAMES</h1>
-  {/if}
+  <div class="container mt-5">
+    {#if page == 'games'}
+      <h1>GAMES</h1>
+    {/if}
+    {#if page == 'users'}
+      <Users/>
+    {/if}
+  </div>
 {/if}

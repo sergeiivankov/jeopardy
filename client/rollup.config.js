@@ -5,6 +5,7 @@ const plugins = [
   svelte({
     onwarn: (warning, handler) => {
       if(warning.code === 'a11y-invalid-attribute') return;
+      if(warning.code === 'a11y-click-events-have-key-events') return;
       handler(warning);
     }
   }),
@@ -24,9 +25,9 @@ export default [
     plugins
   },
   {
-    input: 'client/player/index.js',
+    input: 'client/user/index.js',
     output: {
-      file: 'public/js/player.js',
+      file: 'public/js/user.js',
       format: 'iife'
     },
     watch: {
