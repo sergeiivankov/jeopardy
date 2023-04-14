@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv';
 import express from 'express';
 import helmet from 'helmet';
 import errorsHandle from './helpers/errors-handle.js';
+import gracefulShutdown from './helpers/graceful-shutdown.js';
 import strictRoutes from './helpers/strict-routes.js';
 
 dotenv.config();
@@ -26,16 +27,4 @@ const server = app.listen(port, () => {
 });
 server.setTimeout(15000);
 
-const gracefulShutdown = (reason, err) => {
-  console.log(reason + ' happened');
-  if(err) console.error(err);
-
-  server.close(() => {
-    console.log('Server closed');
-  });
-};
-
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('uncaughtException', err => gracefulShutdown('uncaughtException', err));
-process.on('unhandledRejection', err => gracefulShutdown('unhandledRejection', err));
+gracefulShutdown(server);
