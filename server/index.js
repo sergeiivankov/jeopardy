@@ -5,7 +5,7 @@ import express from 'express';
 import helmet from 'helmet';
 
 import { createAppServer, createRedirectServer } from './helpers/create-server.js';
-import { initDbConnection } from './helpers/database.js';
+import db, { initDbConnection } from './helpers/database.js';
 import errorsHandle from './helpers/errors-handle.js';
 import gracefulShutdown from './helpers/graceful-shutdown.js';
 import hideDirectStatic from './helpers/hide-direct-static.js';
@@ -38,6 +38,7 @@ errorsHandle(app);
     console.log(err);
     process.exit(1);
   }
+  console.log('Connected to database', db.config.filename);
 
   const servers = {};
   servers.appServer = createAppServer(app);
