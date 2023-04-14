@@ -1,3 +1,5 @@
+import db from './database.js';
+
 export default servers => {
   const gracefulShutdown = (reason, err) => {
     console.log(reason + ' happened');
@@ -12,6 +14,10 @@ export default servers => {
         console.log('HTTPS redirect server closed');
       });
     }
+
+    db.close().then(() => {
+      console.log('Database connection closed');
+    });
   };
 
   process.on('SIGINT', () => gracefulShutdown('SIGINT'));

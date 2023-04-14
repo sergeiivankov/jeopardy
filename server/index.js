@@ -5,6 +5,7 @@ import express from 'express';
 import helmet from 'helmet';
 
 import { createAppServer, createRedirectServer } from './helpers/create-server.js';
+import { initDbConnection } from './helpers/database.js';
 import errorsHandle from './helpers/errors-handle.js';
 import gracefulShutdown from './helpers/graceful-shutdown.js';
 import hideDirectStatic from './helpers/hide-direct-static.js';
@@ -30,8 +31,17 @@ app.use('/', playerRouter);
 
 errorsHandle(app);
 
-const servers = {};
-servers.appServer = createAppServer(app);
-servers.redirectServer = createRedirectServer();
+(async () => {
+  try {
+    await initDbConnection();
+  } catch(err) {
+    console.log(err);
+    process.exit(1);
+  }
 
-gracefulShutdown(servers);
+  const servers = {};
+  servers.appServer = createAppServer(app);
+  servers.redirectServer = createRedirectServer();
+
+  gracefulShutdown(servers);
+})();
