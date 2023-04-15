@@ -27,6 +27,12 @@ const checkMaxRoundSubjectsCount = async (gameId, round) => {
   return true;
 };
 
+export const getSubjectByIdAndGame = async (id, gameId) => {
+  return await DB.get(SQL`
+    SELECT id, round, name FROM subjects WHERE id = ${id} AND game_id = ${gameId} LIMIT 1
+  `);
+};
+
 export const getSubjectsByGame = async gameId => {
   return await DB.all(SQL`SELECT id, round, name FROM subjects WHERE game_id = ${gameId}`);
 };
@@ -49,7 +55,7 @@ export const createSubject = async (gameId, data) => {
     INSERT INTO subjects (game_id, round, name) VALUES (${gameId}, ${data.round}, ${data.name})
   `)).lastID;
 
-  const questionsStmt = SQL`INSERT INTO questions (subject_id, 'index') VALUES`;
+  const questionsStmt = SQL`INSERT INTO questions (subject_id, "index") VALUES`;
 
   for(let index in ROUND_PRICES[data.round]) {
     if(index === '0') questionsStmt.append(SQL` (${subjectId}, ${index})`);

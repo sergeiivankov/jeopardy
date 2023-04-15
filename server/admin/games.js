@@ -3,6 +3,7 @@ import asyncHandler from 'express-async-handler';
 import { handleBoolResult } from '../helpers/common.js';
 import { getGames, getGame, createGame, updateGame, deleteGame } from '../models/game.js';
 import { getSubjectsByGame } from '../models/subject.js';
+import { getQuestionsBySubjects } from '../models/question.js';
 
 const router = Router();
 
@@ -17,6 +18,8 @@ router.get('/:id(\\d+)', asyncHandler(async (req, res) => {
   if(typeof(game) === 'string') return res.json({ ok: false, err: game });
 
   game.subjects = await getSubjectsByGame(gameId);
+
+  game.questions = await getQuestionsBySubjects(game.subjects.map(s => s.id));
 
   res.json({ ok: true, res: game });
 }));

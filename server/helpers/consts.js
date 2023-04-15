@@ -2,6 +2,12 @@ export const MAX_ROUND_SUBJECTS_COUNT = [
   6, 6, 6, 7, 1, 1, 1
 ];
 
+export const QUESTIONS_TYPES_EXTENSIONS = {
+  1: 'png',
+  2: 'mp3',
+  3: 'mp4'
+};
+
 export const REQUIRED_ROUND_SUBJECTS_COUNT = [
   6, 6, 6, 1, 0, 0, 0
 ];

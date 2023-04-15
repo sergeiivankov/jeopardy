@@ -23,10 +23,6 @@ subrouter.put('/', asyncHandler(async (req, res) => {
   handleBoolResult(res, await updateSubject(res.locals.gameId, req.body));
 }));
 
-subrouter.put('/move', asyncHandler(async (req, res) => {
-  handleBoolResult(res, await moveSubject(res.locals.gameId, req.body));
-}));
-
 subrouter.delete('/:id(\\d+)', asyncHandler(async (req, res) => {
   handleBoolResult(res, await deleteSubject(res.locals.gameId, parseInt(req.params.id, 10)));
 }));

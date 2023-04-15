@@ -9,7 +9,7 @@
 
 <div class="modal is-active">
   {#if $loadingTimes === 0}
-    <div class="modal-background" on:click={ () => dispatch('close') }></div>
+    <div class="modal-background"></div>
   {/if}
   <div class="modal-card">
     <div class="modal-card-head">

@@ -10,6 +10,7 @@ import gracefulShutdown from './helpers/graceful-shutdown.js';
 import hideDirectStatic from './helpers/hide-direct-static.js';
 import initDatabase from './helpers/init-database.js';
 import logger from './helpers/logger.js';
+import { initStorage } from './helpers/storage.js';
 import strictRoutes from './helpers/strict-routes.js';
 
 import adminRouter from './admin/index.js';
@@ -33,6 +34,8 @@ app.use('/', userRouter);
 errorsHandle(app);
 
 (async () => {
+  await initStorage();
+
   try {
     await initDatabase();
   } catch(err) {

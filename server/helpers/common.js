@@ -22,3 +22,18 @@ export const handleBoolResult = (res, result) => {
   else response.err = result;
   res.json(response);
 };
+
+const randomCharacters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+const randomCharactersLength = randomCharacters.length;
+
+export const randomString = length => {
+  let result = '';
+
+  let counter = 0;
+  while (counter < length) {
+    result += randomCharacters.charAt(Math.floor(Math.random() * randomCharactersLength));
+    counter += 1;
+  }
+
+  return result;
+};

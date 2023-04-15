@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import Modal from '../common/Modal.svelte';
   import { data } from '../common/data.js';
-  import { get, post, put, del } from '../common/request.js';
+  import { get, post, put, del, putMultipart } from '../common/request.js';
 
   export let id;
 
@@ -18,7 +18,12 @@
 
   let game = null;
   let roundSubjects = [];
+  let subjectsQuestions = {};
   let editSubject = null;
+  let editQuestion = null;
+
+  let questionQuestionInput = null;
+  let questionAnswerInput = null;
 
   const load = async () => {
     game = await get('/games/' + id);
@@ -31,6 +36,14 @@
     });
 
     for(let i = 0; i < 7; i++) roundSubjects[i] = subjects.filter(s => s.round === i);
+    roundSubjects = [...roundSubjects];
+
+    subjectsQuestions = {};
+    game.questions.forEach(question => {
+      if(!subjectsQuestions[question.subject_id]) subjectsQuestions[question.subject_id] = [];
+      subjectsQuestions[question.subject_id].push(question);
+    });
+    subjectsQuestions = {...subjectsQuestions};
   };
 
   const saveSubject = async () => {
@@ -42,6 +55,44 @@
     if(result === null) return;
 
     editSubject = null;
+
+    load();
+  };
+
+  const saveQuestion = async () => {
+    const body = new FormData();
+    body.append('subject_id', editQuestion.subject_id);
+    body.append('index', editQuestion.index);
+    body.append('comment', editQuestion.comment || '');
+
+    const questionType = !editQuestion.question_type ? -1 : parseInt(editQuestion.question_type, 10);
+    const answerType = !editQuestion.answer_type ? -1 : parseInt(editQuestion.answer_type, 10);
+    body.append('question_type', questionType);
+    body.append('answer_type', answerType);
+
+    if(questionType !== -1) {
+      if(questionType === 0) body.append('question', questionQuestionInput.value);
+      else {
+        if(!questionQuestionInput.files.length) {
+          return alert('Необходимо выбрать файл для вопроса');
+        }
+        else body.append('question', questionQuestionInput.files[0]);
+      }
+    }
+    if(answerType !== -1) {
+      if(answerType === 0) body.append('answer', questionAnswerInput.value);
+      else {
+        if(!questionAnswerInput.files.length) {
+          return alert('Необходимо выбрать файл для ответа');
+        }
+        else body.append('answer', questionAnswerInput.files[0]);
+      }
+    }
+
+    const result = await putMultipart(`/questions/${id}`, body);
+    if(result === null) return;
+
+    editQuestion = null;
 
     load();
   };
@@ -65,43 +116,87 @@
   </div>
   {#each rounds as roundName, roundIndex}
     <hr>
-    <div class="level">
+    <div class="level mb-5">
       <div class="level-left">
         <div class="title is-4">{ roundName }</div>
       </div>
       <div class="level-right">
         {#if roundSubjects[roundIndex].length < data.MAX_ROUND_SUBJECTS_COUNT[roundIndex]}
           <button class="button is-small mr-5"
+                  class:is-warning={ roundSubjects[roundIndex].length < data.REQUIRED_ROUND_SUBJECTS_COUNT[roundIndex] }
                   on:click={ () => editSubject = { round: roundIndex } }>Добавить тему</button>
         {/if}
         <span class="title is-4"
-              class:has-text-danger-dark={ roundSubjects[roundIndex].length < data.REQUIRED_ROUND_SUBJECTS_COUNT[roundIndex] }
+              class:has-text-warning-dark={ roundSubjects[roundIndex].length < data.REQUIRED_ROUND_SUBJECTS_COUNT[roundIndex] }
               class:has-text-success-dark={ roundSubjects[roundIndex].length >= data.REQUIRED_ROUND_SUBJECTS_COUNT[roundIndex] }>
           { roundSubjects[roundIndex].length }/{ data.MAX_ROUND_SUBJECTS_COUNT[roundIndex] }
         </span>
       </div>
     </div>
     {#each roundSubjects[roundIndex] as subject}
-      <div class="level">
-        <div class="level-left">
-          <div class="title is-5">{ subject.name }</div>
-        </div>
-        <div class="level-right">
-          <a href="#" class="link has-text-info mr-3"
-             on:click|preventDefault={ () => editSubject = { ...subject } }>Изменить</a>
-          <a href="#" class="link has-text-danger"
-            on:click|preventDefault={ () => deleteSubject(subject.id) }>Удалить</a>
-        </div>
-      </div>
-      {#each data.ROUND_PRICES[roundIndex] as price, priceIndex}
-        <div class="box">
-          <div class="columns">
-            <div class="column">
-              { price === 0 ? 'Ставки' : `За ${price}` }
-            </div>
+      <div class="ml-5">
+        <div class="level">
+          <div class="level-left">
+            <div class="title is-5 mr-3 mb-0">Тема: { subject.name }</div>
+            <a href="#" class="link has-text-info mr-3"
+               on:click|preventDefault={ () => editSubject = { ...subject } }>Изменить</a>
+            <a href="#" class="link has-text-danger"
+               on:click|preventDefault={ () => deleteSubject(subject.id) }>Удалить</a>
+          </div>
+          <div class="level-right">
+            <span class="title is-5"
+                  class:has-text-warning-dark={ subjectsQuestions[subject.id].filter(q => q.question_type !== null).length < data.ROUND_PRICES[roundIndex].length }
+                  class:has-text-success-dark={ subjectsQuestions[subject.id].filter(q => q.question_type !== null).length === data.ROUND_PRICES[roundIndex].length }>
+              { subjectsQuestions[subject.id].filter(q => q.question_type !== null).length }/{ data.ROUND_PRICES[roundIndex].length }
+            </span>
           </div>
         </div>
-      {/each}
+        {#each data.ROUND_PRICES[roundIndex] as price, priceIndex}
+          <div class="box">
+            <div class="columns is-multiline">
+              <div class="column is-2">
+                { price === 0 ? 'Ставки' : `За ${price}` }
+                <br>
+                <a href="#" class="link"
+                   class:has-text-warning-dark={ subjectsQuestions[subject.id][priceIndex].question_type === null }
+                   class:has-text-info={ subjectsQuestions[subject.id][priceIndex].question_type !== null }
+                   on:click|preventDefault={ () => editQuestion = { subject_id: subject.id, index: priceIndex } }>
+                  Изменить
+                </a>
+              </div>
+              <div class="column is-5">
+                <b>Вопрос:</b><br>
+                {#if subjectsQuestions[subject.id][priceIndex].question_type === null}
+                  Не указан
+                {:else}
+                  {#if subjectsQuestions[subject.id][priceIndex].question_type === 0}
+                    { subjectsQuestions[subject.id][priceIndex].question }
+                  {:else}
+                    { subjectsQuestions[subject.id][priceIndex].question }
+                  {/if}
+                {/if}
+              </div>
+              <div class="column is-5">
+                <b>Ответ:</b><br>
+                {#if subjectsQuestions[subject.id][priceIndex].answer_type === null}
+                  Не указан
+                {:else}
+                  {#if subjectsQuestions[subject.id][priceIndex].answer_type === 0}
+                    { subjectsQuestions[subject.id][priceIndex].answer }
+                  {:else}
+                    { subjectsQuestions[subject.id][priceIndex].answer }
+                  {/if}
+                {/if}
+              </div>
+              {#if subjectsQuestions[subject.id][priceIndex].comment}
+                <div class="column is-10 is-offset-2 has-text-grey-light">
+                  <b>Комментарий:</b> { subjectsQuestions[subject.id][priceIndex].comment }
+                </div>
+              {/if}
+            </div>
+          </div>
+        {/each}
+      </div>
     {/each}
   {/each}
 {/if}
@@ -130,6 +225,92 @@
       <button class="button is-info" on:click={ saveSubject }>
         { editSubject.id ? 'Сохранить' : 'Создать' }
       </button>
+    </div>
+  </Modal>
+{/if}
+
+{#if editQuestion !== null}
+  <Modal title="Редактирование вопроса" on:close={ () => editQuestion = null }>
+    <div slot="body">
+      <div class="field">
+        <div class="select is-fullwidth">
+          <select bind:value={ editQuestion.question_type }>
+            <option value="">Тип вопроса</option>
+            <option value="0">Вопрос: Текст</option>
+            <option value="1">Вопрос: Изображение</option>
+            <option value="2">Вопрос: Аудио</option>
+            <option value="3">Вопрос: Видео</option>
+          </select>
+        </div>
+      </div>
+      {#if !editQuestion.question_type}
+        <div class="field" style="height:40px"></div>
+      {:else}
+        {#if editQuestion.question_type === '0'}
+          <div class="field">
+            <input type="text" class="input" placeholder="Вопрос" autocomplete="off"
+                  bind:this={ questionQuestionInput }>
+          </div>
+        {:else}
+          <div class="field">
+            <div class="file has-name is-fullwidth">
+              <label class="file-label">
+                <input class="file-input" type="file" bind:this={ questionQuestionInput }
+                       on:change={ e => editQuestion.questionFileName = e.target.files[0].name }
+                       accept=".{ data.QUESTIONS_TYPES_EXTENSIONS[editQuestion.question_type] }">
+                <div class="file-cta">
+                  <div class="file-label">Выбрать файл</div>
+                </div>
+                <div class="file-name">{ editQuestion.questionFileName || 'Файл не выбран' }</div>
+              </label>
+            </div>
+          </div>
+        {/if}
+      {/if}
+      <div class="field" style="height:0.5rem"></div>
+      <div class="field">
+        <div class="select is-fullwidth">
+          <select bind:value={ editQuestion.answer_type }>
+            <option value="">Тип ответа</option>
+            <option value="0">Ответ: Текст</option>
+            <option value="1">Ответ: Изображение</option>
+            <option value="2">Ответ: Аудио</option>
+            <option value="3">Ответ: Видео</option>
+          </select>
+        </div>
+      </div>
+      {#if !editQuestion.answer_type}
+        <div class="field" style="height:40px"></div>
+      {:else}
+        {#if editQuestion.answer_type === '0'}
+          <div class="field">
+            <input type="text" class="input" placeholder="Ответ" autocomplete="off"
+                  bind:this={ questionAnswerInput }>
+          </div>
+        {:else}
+          <div class="field">
+            <div class="file has-name is-fullwidth">
+              <label class="file-label">
+                <input class="file-input" type="file" bind:this={ questionAnswerInput }
+                       on:change={ e => editQuestion.answerFileName = e.target.files[0].name }
+                       accept=".{ data.QUESTIONS_TYPES_EXTENSIONS[editQuestion.answer_type] }">
+                <div class="file-cta">
+                  <div class="file-label">Выбрать файл</div>
+                </div>
+                <div class="file-name">{ editQuestion.answerFileName || 'Файл не выбран' }</div>
+              </label>
+            </div>
+          </div>
+        {/if}
+      {/if}
+      <div class="field" style="height:0.5rem"></div>
+      <div class="field">
+        <input type="text" class="input" placeholder="Комментарий" autocomplete="off"
+               bind:value={ editQuestion.comment }>
+      </div>
+    </div>
+    <div slot="footer">
+      <button class="button is-info" on:click={ saveQuestion }>Сохранить</button>
     </div>
   </Modal>
 {/if}

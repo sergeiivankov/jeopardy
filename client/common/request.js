@@ -7,7 +7,9 @@ export let loadingTimes = writable(0);
 
 export const setBaseURL = value => baseURL = value;
 
-const request = async (method, path, body = null, alertUnauthorized = true) => {
+const request = async (
+  method, path, body = null, alertUnauthorized = true, isMultipart = false
+) => {
   loadingTimes.update(n => n + 1);
 
   try {
@@ -15,8 +17,12 @@ const request = async (method, path, body = null, alertUnauthorized = true) => {
     options.method = method;
     options.headers = { Authorization: token };
     if(body !== null) {
-      options.headers['Content-Type'] = 'application/json';
-      options.body = body;
+      if(isMultipart) {
+        options.body = body;
+      } else {
+        options.headers['Content-Type'] = 'application/json';
+        options.body = body;
+      }
     }
 
     const response = await fetch(baseURL + path, options);
@@ -70,4 +76,8 @@ export const put = async (path, body) => {
 
 export const del = async path => {
   return await request('DELETE', path);
+};
+
+export const putMultipart = async (path, body) => {
+  return await request('PUT', path, body, true, true);
 };
