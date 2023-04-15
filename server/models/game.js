@@ -4,6 +4,12 @@ export const getGames = async ownerId => {
   `);
 };
 
+export const getGame = async (ownerId, id) => {
+  return await DB.get(SQL`
+    SELECT id, name FROM games WHERE id = ${id} AND owner_id = ${ownerId} LIMIT 1
+  `);
+};
+
 export const createGame = async (ownerId, data) => {
   if(!data.name) return 'Название обязательно к заполнению';
 

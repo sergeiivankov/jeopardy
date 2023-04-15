@@ -2,18 +2,25 @@
   import { onMount } from 'svelte';
 
   import Auth from '../common/Auth.svelte';
+  import Game from './Game.svelte';
   import Games from './Games.svelte';
   import Users from './Users.svelte';
   import { token, isAdmin, setToken, setIsAdmin } from '../common/auth.js';
-  import { setBaseURL, get } from '../common/request.js';
+  import { loadingTimes, setBaseURL, get } from '../common/request.js';
 
   setBaseURL('/admin');
 
   let page = null;
+  let editGameId = 0;
 
   const logout = () => {
     setToken(null);
     page = 'auth';
+  };
+
+  const editGame = e => {
+    editGameId = e.detail;
+    page = 'gameEdit';
   };
 
   onMount(async () => {
@@ -44,7 +51,7 @@
     <div class="container">
       <div class="navbar-menu">
         <div class="navbar-start">
-          <a href="#" class="navbar-item" class:is-active={ page == 'games' }
+          <a href="#" class="navbar-item" class:is-active={ page == 'games' || page == 'gameEdit' }
              on:click|preventDefault={ () => page = 'games' }>Игры</a>
           {#if $isAdmin}
             <a href="#" class="navbar-item" class:is-active={ page == 'users' }
@@ -60,10 +67,20 @@
 
   <div class="container mt-5">
     {#if page == 'games'}
-      <Games/>
+      <Games on:edit={ editGame }/>
+    {/if}
+    {#if page == 'gameEdit'}
+      <Game id={ editGameId }/>
     {/if}
     {#if page == 'users'}
       <Users/>
     {/if}
+  </div>
+{/if}
+
+{#if $loadingTimes > 0}
+  <div class="modal is-active">
+    <div class="modal-background"></div>
+    <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
   </div>
 {/if}

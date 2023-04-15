@@ -1,10 +1,15 @@
+import { writable } from 'svelte/store';
 import { token } from './auth.js';
 
 let baseURL = '';
 
+export let loadingTimes = writable(0);
+
 export const setBaseURL = value => baseURL = value;
 
 const request = async (method, path, body = null, alertUnauthorized = true) => {
+  loadingTimes.update(n => n + 1);
+
   try {
     const options = {};
     options.method = method;
@@ -18,16 +23,19 @@ const request = async (method, path, body = null, alertUnauthorized = true) => {
 
     if(response.status === 401) {
       if(alertUnauthorized) alert('Ошибка авторизации');
+      loadingTimes.update(n => n - 1);
       return null;
     }
 
     if(response.status === 404) {
       alert('Адрес запроса не найден');
+      loadingTimes.update(n => n - 1);
       return null;
     }
 
     if(response.status === 500) {
       alert('Серверная ошибка');
+      loadingTimes.update(n => n - 1);
       return null;
     }
 
@@ -35,12 +43,15 @@ const request = async (method, path, body = null, alertUnauthorized = true) => {
 
     if(!data.ok) {
       alert(data.err);
+      loadingTimes.update(n => n - 1);
       return null;
     }
 
+    loadingTimes.update(n => n - 1);
     return data.res;
   } catch(err) {
     alert('Ошибка: ' + JSON.stringify(err));
+    loadingTimes.update(n => n - 1);
     return null;
   }
 };

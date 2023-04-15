@@ -1,12 +1,18 @@
 import { Router } from 'express';
 import asyncHandler from 'express-async-handler';
 import { handleBoolResult } from '../helpers/common.js';
-import { getGames, createGame, updateGame, deleteGame } from '../models/game.js';
+import { getGames, getGame, createGame, updateGame, deleteGame } from '../models/game.js';
 
 const router = Router();
 
 router.get('/', asyncHandler(async (req, res) => {
   res.json({ ok: true, res: await getGames(res.locals.userId) });
+}));
+
+router.get('/:id(\\d+)', asyncHandler(async (req, res) => {
+  const game = await getGame(res.locals.userId, parseInt(req.params.id, 10));
+
+  res.json({ ok: true, res: game });
 }));
 
 router.post('/', asyncHandler(async (req, res) => {

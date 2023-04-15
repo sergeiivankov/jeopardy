@@ -1,10 +1,11 @@
 <script>
   import { onMount } from 'svelte';
 
+  import Modal from '../common/Modal.svelte';
   import { get, post, put, del } from '../common/request.js';
 
   let editUser = null;
-  let users = [];
+  let users = null;
 
   const generatePassword = () => {
     let result = '';
@@ -44,64 +45,58 @@
   });
 </script>
 
-<div class="block">
-  <button class="button is-info" on:click={ () => editUser = {} }>Добавить пользователя</button>
-</div>
-{#if users.length === 0}
-  <div class="has-text-centered">
-    В базе нет ни одного пользователя
+{#if users !== null}
+  <div class="block">
+    <button class="button is-info" on:click={ () => editUser = {} }>Добавить пользователя</button>
   </div>
-{:else}
-  <table class="table is-bordered is-striped is-hoverable is-fullwidth">
-    <tbody>
-      {#each users as user}
-        <tr>
-          <td>{ user.id }</td>
-          <td>{ user.name }</td>
-          <td>{ user.password }</td>
-          <td class="is-narrow">
-            <a href="#" class="link has-text-info"
-               on:click|preventDefault={ () => editUser = { ...user } }>Изменить</a>
-            &nbsp;
-            <a href="#" class="link has-text-danger"
-               on:click|preventDefault={ () => deleteUser(user.id) }>Удалить</a>
-          </td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
+  {#if users.length === 0}
+    <div class="has-text-centered">
+      В базе нет ни одного пользователя
+    </div>
+  {:else}
+    <table class="table is-bordered is-striped is-hoverable is-fullwidth">
+      <tbody>
+        {#each users as user}
+          <tr>
+            <td>{ user.id }</td>
+            <td>{ user.name }</td>
+            <td>{ user.password }</td>
+            <td class="is-narrow">
+              <a href="#" class="link has-text-info"
+                on:click|preventDefault={ () => editUser = { ...user } }>Изменить</a>
+              &nbsp;
+              <a href="#" class="link has-text-danger"
+                on:click|preventDefault={ () => deleteUser(user.id) }>Удалить</a>
+            </td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  {/if}
 {/if}
 
 {#if editUser !== null}
-  <div class="modal is-active">
-    <div class="modal-background" on:click={ () => editUser = null }></div>
-    <div class="modal-card">
-      <div class="modal-card-head">
-        <div class="modal-card-title">
-          { editUser.id ? 'Редактирование пользователя' : 'Создание пользователя' }
-        </div>
-        <button class="delete" on:click={ () => editUser = null }></button>
+  <Modal title={ editUser.id ? 'Редактирование пользователя' : 'Создание пользователя' }
+         on:close={ () => editUser = null }>
+    <div slot="body">
+      <div class="field">
+        <input type="text" class="input" placeholder="Имя" autocomplete="off"
+               bind:value={ editUser.name }>
       </div>
-      <div class="modal-card-body">
-        <div class="field">
-          <input type="text" class="input" placeholder="Имя" autocomplete="off"
-                 bind:value={ editUser.name }>
+      <div class="field has-addons">
+        <div class="control is-expanded">
+          <input type="text" class="input" placeholder="Пароль" autocomplete="off"
+                 bind:value={ editUser.password }>
         </div>
-        <div class="field has-addons">
-          <div class="control is-expanded">
-            <input type="text" class="input" placeholder="Пароль" autocomplete="off"
-                   bind:value={ editUser.password }>
-          </div>
-          <div class="control">
-            <button class="button" on:click={ generatePassword }>Сгенерировать</button>
-          </div>
+        <div class="control">
+          <button class="button" on:click={ generatePassword }>Сгенерировать</button>
         </div>
-      </div>
-      <div class="modal-card-foot">
-        <button class="button is-info" on:click={ save }>
-          { editUser.id ? 'Сохранить' : 'Создать' }
-        </button>
       </div>
     </div>
-  </div>
+    <div slot="footer">
+      <button class="button is-info" on:click={ save }>
+        { editUser.id ? 'Сохранить' : 'Создать' }
+      </button>
+    </div>
+  </Modal>
 {/if}
