@@ -171,8 +171,19 @@
                 {:else}
                   {#if subjectsQuestions[subject.id][priceIndex].question_type === 0}
                     { subjectsQuestions[subject.id][priceIndex].question }
-                  {:else}
-                    { subjectsQuestions[subject.id][priceIndex].question }
+                  {/if}
+                  {#if subjectsQuestions[subject.id][priceIndex].question_type === 1}
+                    <img src="/storage/{ subjectsQuestions[subject.id][priceIndex].question }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].question_type] }" class="mt-2">
+                  {/if}
+                  {#if subjectsQuestions[subject.id][priceIndex].question_type === 2}
+                    <audio controls preload="none" class="mt-2" style="width:100%"
+                           src="/storage/{ subjectsQuestions[subject.id][priceIndex].question }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].question_type] }">
+                    </audio>
+                  {/if}
+                  {#if subjectsQuestions[subject.id][priceIndex].question_type === 3}
+                    <video controls preload="none" class="mt-2" style="width:100%"
+                           src="/storage/{ subjectsQuestions[subject.id][priceIndex].question }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].question_type] }">
+                    </video>
                   {/if}
                 {/if}
               </div>
@@ -183,8 +194,19 @@
                 {:else}
                   {#if subjectsQuestions[subject.id][priceIndex].answer_type === 0}
                     { subjectsQuestions[subject.id][priceIndex].answer }
-                  {:else}
-                    { subjectsQuestions[subject.id][priceIndex].answer }
+                  {/if}
+                  {#if subjectsQuestions[subject.id][priceIndex].answer_type === 1}
+                    <img src="/storage/{ subjectsQuestions[subject.id][priceIndex].answer }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].answer_type] }" class="mt-2">
+                  {/if}
+                  {#if subjectsQuestions[subject.id][priceIndex].answer_type === 2}
+                    <audio controls preload="none" class="mt-2" style="width:100%"
+                           src="/storage/{ subjectsQuestions[subject.id][priceIndex].answer }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].answer_type] }">
+                    </audio>
+                  {/if}
+                  {#if subjectsQuestions[subject.id][priceIndex].answer_type === 3}
+                    <video controls preload="none" class="mt-2" style="width:100%"
+                           src="/storage/{ subjectsQuestions[subject.id][priceIndex].answer }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].answer_type] }">
+                    </video>
                   {/if}
                 {/if}
               </div>

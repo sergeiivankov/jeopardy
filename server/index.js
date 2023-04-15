@@ -26,6 +26,7 @@ app.use(strictRoutes);
 hideDirectStatic(app);
 app.use(compression());
 app.use(express.static('public', { index: false, redirect: false }));
+app.use('/storage', express.static('storage', { index: false, redirect: false }));
 app.use(express.json());
 
 app.use('/admin', adminRouter);
