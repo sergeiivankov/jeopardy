@@ -9,7 +9,11 @@ export const sendHtmlFile = (name, res) => {
 
 export const sendNotFound = (req, res) => {
   res.status(404);
-  sendHtmlFile('404', res);
+
+  if(req.get('Content-Type') === 'application/json') {
+    res.json({ ok: false, err: 'Адрес запроса не найден' });
+  }
+  else sendHtmlFile('404', res);
 };
 
 export const handleBoolResult = (res, result) => {

@@ -7,6 +7,10 @@ export default app => {
     console.error(err);
 
     res.status(500);
-    sendHtmlFile('500', res);
+
+    if(req.get('Content-Type') === 'application/json') {
+      res.json({ ok: false, err: 'Серверная ошибка' });
+    }
+    else sendHtmlFile('500', res);
   });
 };
