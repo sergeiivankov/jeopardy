@@ -10,11 +10,22 @@
 
   const load = async () => {
     games = await get('/games');
+    if(!games) return;
+
+    games = games.sort((a, b) => {
+      if(a.name < b.name) return -1;
+      if(a.name > b.name) return 1;
+      return 0;
+    });
   };
 
   const save = async () => {
-    if(editGame.id) await put('/games', editGame);
-    else await post('/games', editGame);
+    let requestFn;
+    if(editSubject.id) requestFn = put;
+    else requestFn = post;
+
+    const result = await requestFn('/games', editGame);
+    if(result === null) return;
 
     editGame = null;
 

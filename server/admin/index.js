@@ -1,10 +1,14 @@
 import { Router } from 'express';
 import asyncHandler from 'express-async-handler';
-import { sendHtmlFile } from '../helpers/common.js';
+import { sendHtmlFile, sendNotFound } from '../helpers/common.js';
+import {
+  MAX_ROUND_SUBJECTS_COUNT, REQUIRED_ROUND_SUBJECTS_COUNT, ROUND_PRICES
+} from '../helpers/consts.js';
 import { getUserIdByToken } from '../models/user.js';
 
-import usersRouter from './users.js';
 import gamesRouter from './games.js';
+import subjectsRouter from './subjects.js';
+import usersRouter from './users.js';
 
 const router = Router();
 
@@ -33,7 +37,15 @@ router.get('/check', (req, res) => {
   res.json({ ok: true, res: res.locals.userId === 0 });
 });
 
+router.get('/data', (req, res) => {
+  const data = { MAX_ROUND_SUBJECTS_COUNT, REQUIRED_ROUND_SUBJECTS_COUNT, ROUND_PRICES };
+  res.json({ ok: true, res: data });
+});
+
 router.use('/games', gamesRouter);
+router.use('/subjects', subjectsRouter);
 router.use('/users', usersRouter);
+
+router.use(sendNotFound);
 
 export default router;

@@ -14,6 +14,7 @@ export const sendNotFound = (req, res) => {
 
 export const handleBoolResult = (res, result) => {
   const response = { ok: result === true };
-  if(result !== true) response.err = result;
+  if(result === true) response.res = true;
+  else response.err = result;
   res.json(response);
 };

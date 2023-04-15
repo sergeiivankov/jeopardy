@@ -21,11 +21,22 @@
 
   const load = async () => {
     users = await get('/users');
+    if(!users) return;
+
+    users = users.sort((a, b) => {
+      if(a.name < b.name) return -1;
+      if(a.name > b.name) return 1;
+      return 0;
+    });
   };
 
   const save = async () => {
-    if(editUser.id) await put('/users', editUser);
-    else await post('/users', editUser);
+    let requestFn;
+    if(editSubject.id) requestFn = put;
+    else requestFn = post;
+
+    const result = await requestFn('/users', editUser);
+    if(result === null) return;
 
     editUser = null;
 

@@ -6,6 +6,7 @@
   import Games from './Games.svelte';
   import Users from './Users.svelte';
   import { token, isAdmin, setToken, setIsAdmin } from '../common/auth.js';
+  import { setData } from '../common/data.js';
   import { loadingTimes, setBaseURL, get } from '../common/request.js';
 
   setBaseURL('/admin');
@@ -21,6 +22,14 @@
   const editGame = e => {
     editGameId = e.detail;
     page = 'gameEdit';
+  };
+
+  const onAuthorized = async () => {
+    const data = await get('/data');
+    if(!data) return;
+
+    setData(data);
+    page = 'games';
   };
 
   onMount(async () => {
@@ -40,12 +49,12 @@
 
     setIsAdmin(result);
 
-    page = 'games';
+    onAuthorized();
 	});
 </script>
 
 {#if page == 'auth'}
-  <Auth on:authorized={ () => page = 'games' }/>
+  <Auth on:authorized={ onAuthorized }/>
 {:else}
   <div class="navbar is-light">
     <div class="container">

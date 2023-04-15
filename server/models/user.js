@@ -4,12 +4,12 @@ export const getUserIdByToken = async token => {
 };
 
 export const getUsers = async () => {
-  return await DB.all('SELECT id, name, password FROM users ORDER BY name ASC');
+  return await DB.all('SELECT id, name, password FROM users');
 };
 
 export const createUser = async data => {
-  if(!data.name) return 'Имя обязательно к заполнению';
-  if(!data.password) return 'Пароль обязателен к заполнению';
+  if(!Object.hasOwn(data, 'name')) return 'Имя обязательно к заполнению';
+  if(!Object.hasOwn(data, 'password')) return 'Пароль обязателен к заполнению';
 
   data.name = data.name.trim();
   data.password = data.password.trim();
@@ -28,9 +28,9 @@ export const createUser = async data => {
 };
 
 export const updateUser = async data => {
-  if(!data.id) return 'Не передан идентификатор пользователя';
-  if(!data.name) return 'Имя обязательно к заполнению';
-  if(!data.password) return 'Пароль обязателен к заполнению';
+  if(!Object.hasOwn(data, 'id')) return 'Не передан идентификатор пользователя';
+  if(!Object.hasOwn(data, 'name')) return 'Имя обязательно к заполнению';
+  if(!Object.hasOwn(data, 'password')) return 'Пароль обязателен к заполнению';
 
   data.name = data.name.trim();
   data.password = data.password.trim();
