@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import sharp from 'sharp';
 import { QUESTIONS_TYPES_EXTENSIONS, ROUND_PRICES } from '../helpers/consts.js';
 import { randomString } from '../helpers/common.js';
 import { storageExists, storageSave, storageDelete } from '../helpers/storage.js';
@@ -68,6 +69,13 @@ export const updateQuestion = async (gameId, data, files) => {
       storageName = randomString(32);
       storageFullName = `${storageName}.${QUESTIONS_TYPES_EXTENSIONS[data.question_type]}`;
     } while(await storageExists(storageFullName));
+
+    if(data.question_type === 1) {
+      file.buffer = await sharp(file.buffer)
+        .resize({ width: 960, height: 960, fit: 'inside' })
+        .png({ compressionLevel: 9 })
+        .toBuffer()
+    }
 
     await storageSave(storageFullName, file.buffer);
     data.question = storageName;
