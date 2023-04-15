@@ -1,3 +1,9 @@
+import Joi from 'joi';
+import { validate, ruleId, ruleName } from '../helpers/validation.js';
+
+const schemaCreate = Joi.object(ruleName);
+const schemaUpdate = schemaCreate.append(ruleId);
+
 export const checkGameOwner = async (ownerId, id) => {
   const gameExists = await DB.get(SQL`
     SELECT id FROM games WHERE id = ${id} AND owner_id = ${ownerId} LIMIT 1
@@ -21,10 +27,8 @@ export const getGame = async (ownerId, id) => {
 };
 
 export const createGame = async (ownerId, data) => {
-  if(!Object.hasOwn(data, 'name')) return 'Название обязательно к заполнению';
-
-  data.name = data.name.trim();
-  if(data.name === '') return 'Название обязательно к заполнению';
+  data = validate(schemaCreate, data);
+  if(typeof(data) === 'string') return data;
 
   const gameNameExists = await DB.get(SQL`
     SELECT id FROM games WHERE owner_id = ${ownerId} AND name = ${data.name} LIMIT 1
@@ -39,12 +43,8 @@ export const createGame = async (ownerId, data) => {
 };
 
 export const updateGame = async (ownerId, data) => {
-  if(!Object.hasOwn(data, 'id')) return 'Не передан идентификатор игры';
-  if(!Object.hasOwn(data, 'name')) return 'Название обязательно к заполнению';
-
-  data.id = parseInt(data.id, 10);
-  data.name = data.name.trim();
-  if(data.name === '') return 'Название обязательно к заполнению';
+  data = validate(schemaUpdate, data);
+  if(typeof(data) === 'string') return data;
 
   const checkOwner = await checkGameOwner(ownerId, data.id);
   if(checkOwner !== true) return checkOwner;

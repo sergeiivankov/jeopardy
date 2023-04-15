@@ -1,4 +1,16 @@
+import Joi from 'joi';
 import { MAX_ROUND_SUBJECTS_COUNT } from '../helpers/consts.js';
+import { validate, ruleId, ruleName } from '../helpers/validation.js';
+
+const schemaCreate = Joi.object(ruleName).append({
+  round: Joi.number().required().integer().min(0).max(6).messages({
+    'any.required': 'Идентификатор раунда не передан',
+    'number.base': 'Идентификатор раунда не является целым числом',
+    'number.min': 'Неверный идентификатор раунда',
+    'number.max': 'Неверный идентификатор раунда'
+  })
+});
+const schemaUpdate = schemaCreate.append(ruleId);
 
 const checkMaxRoundSubjectsCount = async (gameId, round) => {
   const maxRoundSubjectsCount = MAX_ROUND_SUBJECTS_COUNT[round];
@@ -20,13 +32,8 @@ export const getSubjectsByGame = async gameId => {
 };
 
 export const createSubject = async (gameId, data) => {
-  if(!Object.hasOwn(data, 'round')) return 'Не передан идентификатор раунда';
-  if(!Object.hasOwn(data, 'name')) return 'Название обязательно к заполнению';
-
-  data.round = parseInt(data.round, 10);
-  data.name = data.name.trim();
-
-  if(data.round < 0 || data.round > 6) return 'Неверный идентификатор раунда';
+  data = validate(schemaCreate, data);
+  if(typeof(data) === 'string') return data;
 
   const subjectNameExists = await DB.get(SQL`
     SELECT id FROM subjects
@@ -46,15 +53,8 @@ export const createSubject = async (gameId, data) => {
 };
 
 export const updateSubject = async (gameId, data) => {
-  if(!Object.hasOwn(data, 'id')) return 'Не передан идентификатор темы';
-  if(!Object.hasOwn(data, 'round')) return 'Не передан идентификатор раунда';
-  if(!Object.hasOwn(data, 'name')) return 'Название обязательно к заполнению';
-
-  data.id = parseInt(data.id, 10);
-  data.round = parseInt(data.round, 10);
-  data.name = data.name.trim();
-
-  if(data.round < 0 || data.round > 6) return 'Неверный идентификатор раунда';
+  data = validate(schemaUpdate, data);
+  if(typeof(data) === 'string') return data;
 
   const subjectNameExists = await DB.get(SQL`
     SELECT id FROM subjects

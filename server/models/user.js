@@ -1,3 +1,19 @@
+import Joi from 'joi';
+import { validate, ruleId } from '../helpers/validation.js';
+
+const schemaCreate = Joi.object({
+  name: Joi.string().required().trim().messages({
+    'any.required': 'Имя не передано',
+    'string.empty': 'Имя не может быть пустым',
+  }),
+  password: Joi.string().required().trim().min(8, 'utf8').messages({
+    'any.required': 'Пароль не передан',
+    'string.empty': 'Пароль не может быть короче 8 символов',
+    'string.min': 'Пароль не может быть короче 8 символов',
+  })
+});
+const schemaUpdate = schemaCreate.append(ruleId);
+
 export const getUserIdByToken = async token => {
   const user = await DB.get(SQL`SELECT id FROM users WHERE password = ${token} LIMIT 1`);
   return user?.id;
@@ -8,11 +24,8 @@ export const getUsers = async () => {
 };
 
 export const createUser = async data => {
-  if(!Object.hasOwn(data, 'name')) return 'Имя обязательно к заполнению';
-  if(!Object.hasOwn(data, 'password')) return 'Пароль обязателен к заполнению';
-
-  data.name = data.name.trim();
-  data.password = data.password.trim();
+  data = validate(schemaCreate, data);
+  if(typeof(data) === 'string') return data;
 
   const userNameExists = await DB.get(SQL`SELECT id FROM users WHERE name = ${data.name} LIMIT 1`);
   if(userNameExists) return 'Пользователь с таким именем уже существует';
@@ -28,12 +41,8 @@ export const createUser = async data => {
 };
 
 export const updateUser = async data => {
-  if(!Object.hasOwn(data, 'id')) return 'Не передан идентификатор пользователя';
-  if(!Object.hasOwn(data, 'name')) return 'Имя обязательно к заполнению';
-  if(!Object.hasOwn(data, 'password')) return 'Пароль обязателен к заполнению';
-
-  data.name = data.name.trim();
-  data.password = data.password.trim();
+  data = validate(schemaUpdate, data);
+  if(typeof(data) === 'string') return data;
 
   const userExists = await DB.get(SQL`SELECT id FROM users WHERE id = ${data.id} LIMIT 1`);
   if(!userExists) return 'Пользователя с переданным идентификатором не существует';

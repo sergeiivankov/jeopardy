@@ -21,7 +21,7 @@
 
   const save = async () => {
     let requestFn;
-    if(editSubject.id) requestFn = put;
+    if(editGame.id) requestFn = put;
     else requestFn = post;
 
     const result = await requestFn('/games', editGame);

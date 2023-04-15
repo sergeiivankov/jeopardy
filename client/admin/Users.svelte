@@ -32,7 +32,7 @@
 
   const save = async () => {
     let requestFn;
-    if(editSubject.id) requestFn = put;
+    if(editUser.id) requestFn = put;
     else requestFn = post;
 
     const result = await requestFn('/users', editUser);
