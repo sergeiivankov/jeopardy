@@ -1,5 +1,5 @@
 <script>
-  import { onMount, createEventDispatcher } from 'svelte';
+  import { onMount } from 'svelte';
   import Modal from '../common/Modal.svelte';
   import { data } from '../common/data.js';
   import { get, post, put, del } from '../common/request.js';
@@ -46,6 +46,14 @@
     load();
   };
 
+  const deleteSubject = async subjectId => {
+    if(!confirm('Точно удалить тему и все ее вопросы?')) return;
+
+    await del(`/subjects/${id}/${subjectId}`);
+
+    load();
+  };
+
   onMount(() => {
     load();
   });
@@ -55,26 +63,45 @@
   <div class="block has-text-centered">
     <div class="title">{ game.name }</div>
   </div>
-  {#each rounds as roundName, index}
+  {#each rounds as roundName, roundIndex}
     <hr>
     <div class="level">
       <div class="level-left">
         <div class="title is-4">{ roundName }</div>
       </div>
       <div class="level-right">
-        {#if roundSubjects[index].length < data.MAX_ROUND_SUBJECTS_COUNT[index]}
+        {#if roundSubjects[roundIndex].length < data.MAX_ROUND_SUBJECTS_COUNT[roundIndex]}
           <button class="button is-small mr-5"
-                  on:click={ () => editSubject = { round: index } }>Добавить тему</button>
+                  on:click={ () => editSubject = { round: roundIndex } }>Добавить тему</button>
         {/if}
         <span class="title is-4"
-              class:has-text-danger-dark={ roundSubjects[index].length < data.REQUIRED_ROUND_SUBJECTS_COUNT[index] }
-              class:has-text-success-dark={ roundSubjects[index].length >= data.REQUIRED_ROUND_SUBJECTS_COUNT[index] }>
-          { roundSubjects[index].length }/{ data.MAX_ROUND_SUBJECTS_COUNT[index] }
+              class:has-text-danger-dark={ roundSubjects[roundIndex].length < data.REQUIRED_ROUND_SUBJECTS_COUNT[roundIndex] }
+              class:has-text-success-dark={ roundSubjects[roundIndex].length >= data.REQUIRED_ROUND_SUBJECTS_COUNT[roundIndex] }>
+          { roundSubjects[roundIndex].length }/{ data.MAX_ROUND_SUBJECTS_COUNT[roundIndex] }
         </span>
       </div>
     </div>
-    {#each roundSubjects[index] as subject}
-      <div class="block">{ subject.name }</div>
+    {#each roundSubjects[roundIndex] as subject}
+      <div class="level">
+        <div class="level-left">
+          <div class="title is-5">{ subject.name }</div>
+        </div>
+        <div class="level-right">
+          <a href="#" class="link has-text-info mr-3"
+             on:click|preventDefault={ () => editSubject = { ...subject } }>Изменить</a>
+          <a href="#" class="link has-text-danger"
+            on:click|preventDefault={ () => deleteSubject(subject.id) }>Удалить</a>
+        </div>
+      </div>
+      {#each data.ROUND_PRICES[roundIndex] as price, priceIndex}
+        <div class="box">
+          <div class="columns">
+            <div class="column">
+              { price === 0 ? 'Ставки' : `За ${price}` }
+            </div>
+          </div>
+        </div>
+      {/each}
     {/each}
   {/each}
 {/if}

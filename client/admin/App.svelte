@@ -56,7 +56,7 @@
 {#if page == 'auth'}
   <Auth on:authorized={ onAuthorized }/>
 {:else}
-  <div class="navbar is-light">
+  <div class="navbar is-dark">
     <div class="container">
       <div class="navbar-menu">
         <div class="navbar-start">

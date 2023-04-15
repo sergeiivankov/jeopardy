@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import { validate, ruleId, ruleName } from '../helpers/validation.js';
+import { getSubjectsByGame, deleteSubject } from './subject.js';
 
 const schemaCreate = Joi.object(ruleName);
 const schemaUpdate = schemaCreate.append(ruleId);
@@ -67,13 +68,12 @@ export const deleteGame = async (ownerId, id) => {
   const checkOwner = await checkGameOwner(ownerId, id);
   if(checkOwner !== true) return checkOwner;
 
-  await DB.run(SQL`DELETE FROM subjects WHERE game_id = ${gameId}`);
+  const subjects = await getSubjectsByGame(id);
+  for(let subject of subjects) await deleteSubject(id, subject.id);
+
   await DB.run(SQL`DELETE FROM games WHERE id = ${id}`);
 
-  // TODO:
-  // - not delete announced games
-  // - delete game questions
-  // - delete game questions resouces (images, audios, videos)
+  // TODO: not delete announced games
 
   return true;
 };

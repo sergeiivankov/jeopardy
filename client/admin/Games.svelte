@@ -33,7 +33,7 @@
   };
 
   const deleteGame = async id => {
-    if(!confirm('Точно удалить игру и все вопросы?')) return;
+    if(!confirm('Точно удалить игру и все ее темы и вопросы?')) return;
 
     await del('/games/' + id);
 
@@ -63,14 +63,12 @@
               { game.announced === 1 ? 'Анонсирована' : 'Не анонсирована' }
             </td>
             <td class="is-narrow">
-              <a href="#" class="link has-text-info"
+              <a href="#" class="link has-text-info mr-2"
                 on:click|preventDefault={ () => editGame = { ...game } }>Изменить</a>
-              &nbsp;
-              <a href="#" class="link has-text-info"
+              <a href="#" class="link has-text-info mr-2"
                 on:click|preventDefault={ () => dispatch('edit', game.id) }>
                 Редактировать вопросы
               </a>
-              &nbsp;
               <a href="#" class="link has-text-danger"
                 on:click|preventDefault={ () => deleteGame(game.id) }>Удалить</a>
             </td>

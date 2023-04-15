@@ -73,9 +73,8 @@
             <td>{ user.name }</td>
             <td>{ user.password }</td>
             <td class="is-narrow">
-              <a href="#" class="link has-text-info"
+              <a href="#" class="link has-text-info mr-2"
                 on:click|preventDefault={ () => editUser = { ...user } }>Изменить</a>
-              &nbsp;
               <a href="#" class="link has-text-danger"
                 on:click|preventDefault={ () => deleteUser(user.id) }>Удалить</a>
             </td>

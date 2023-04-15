@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { MAX_ROUND_SUBJECTS_COUNT } from '../helpers/consts.js';
+import { MAX_ROUND_SUBJECTS_COUNT, ROUND_PRICES } from '../helpers/consts.js';
 import { validate, ruleId, ruleName } from '../helpers/validation.js';
 
 const schemaCreate = Joi.object(ruleName).append({
@@ -45,9 +45,18 @@ export const createSubject = async (gameId, data) => {
   const maxRoundSubjectsCountResult = await checkMaxRoundSubjectsCount(gameId, data.round);
   if(maxRoundSubjectsCountResult !== true) return maxRoundSubjectsCountResult;
 
-  await DB.run(SQL`
+  const subjectId = (await DB.run(SQL`
     INSERT INTO subjects (game_id, round, name) VALUES (${gameId}, ${data.round}, ${data.name})
-  `);
+  `)).lastID;
+
+  const questionsStmt = SQL`INSERT INTO questions (subject_id, 'index') VALUES`;
+
+  for(let index in ROUND_PRICES[data.round]) {
+    if(index === '0') questionsStmt.append(SQL` (${subjectId}, ${index})`);
+    else questionsStmt.append(SQL`, (${subjectId}, ${index})`);
+  }
+
+  await DB.run(questionsStmt);
 
   return true;
 };
@@ -79,10 +88,9 @@ export const deleteSubject = async (gameId, id) => {
   if(!id) return 'Не передан идентификатор темы';
 
   await DB.run(SQL`DELETE FROM subjects WHERE id = ${id} AND game_id = ${gameId}`);
+  await DB.run(SQL`DELETE FROM questions WHERE subject_id = ${id}`);
 
-  // TODO:
-  // - delete subject questions
-  // - delete subject questions resouces (images, audios, videos)
+  // TODO: delete subject questions resouces (images, audios, videos)
 
   return true;
 };
