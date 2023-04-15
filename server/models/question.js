@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import { QUESTIONS_TYPES_EXTENSIONS, ROUND_PRICES } from '../helpers/consts.js';
 import { randomString } from '../helpers/common.js';
-import { storageExists, storageSave } from '../helpers/storage.js';
+import { storageExists, storageSave, storageDelete } from '../helpers/storage.js';
 import { validate } from '../helpers/validation.js';
 import { getSubjectByIdAndGame } from './subject.js';
 
@@ -89,6 +89,22 @@ export const updateQuestion = async (gameId, data, files) => {
 
     await storageSave(storageFullName, file.buffer);
     data.answer = storageName;
+  }
+
+  const question = await DB.get(SQL`
+    SELECT question_type, question, answer_type, answer
+    FROM questions WHERE subject_id = ${data.subject_id} AND "index" = ${data.index}
+    LIMIT 1
+  `);
+  if(question.question_type > 0) {
+    await storageDelete(
+      `${question.question}.${QUESTIONS_TYPES_EXTENSIONS[question.question_type]}`
+    );
+  }
+  if(question.answer_type > 0) {
+    await storageDelete(
+      `${question.answer}.${QUESTIONS_TYPES_EXTENSIONS[question.answer_type]}`
+    );
   }
 
   await DB.run(SQL`

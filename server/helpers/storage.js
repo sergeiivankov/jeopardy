@@ -1,4 +1,4 @@
-import { access, mkdir, stat, writeFile } from 'node:fs/promises';
+import { access, mkdir, stat, unlink, writeFile } from 'node:fs/promises';
 
 export const initStorage = async () => {
   try {
@@ -23,4 +23,8 @@ export const storageExists = async name => {
 
 export const storageSave = async (name, content) => {
   await writeFile('./storage/' + name, content);
+};
+
+export const storageDelete = async name => {
+  await unlink('./storage/' + name);
 };

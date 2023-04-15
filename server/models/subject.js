@@ -1,6 +1,10 @@
 import Joi from 'joi';
-import { MAX_ROUND_SUBJECTS_COUNT, ROUND_PRICES } from '../helpers/consts.js';
+import {
+  MAX_ROUND_SUBJECTS_COUNT, QUESTIONS_TYPES_EXTENSIONS, ROUND_PRICES
+} from '../helpers/consts.js';
+import { storageDelete } from '../helpers/storage.js';
 import { validate, ruleId, ruleName } from '../helpers/validation.js';
+import { getQuestionsBySubjects } from './question.js';
 
 const schemaCreate = Joi.object(ruleName).append({
   round: Joi.number().required().integer().min(0).max(6).messages({
@@ -110,9 +114,22 @@ export const deleteSubject = async (gameId, id) => {
   if(!id) return 'Не передан идентификатор темы';
 
   await DB.run(SQL`DELETE FROM subjects WHERE id = ${id} AND game_id = ${gameId}`);
+
+  const questions = await getQuestionsBySubjects([id]);
   await DB.run(SQL`DELETE FROM questions WHERE subject_id = ${id}`);
 
-  // TODO: delete subject questions resouces (images, audios, videos)
+  for(let question of questions) {
+    if(question.question_type > 0) {
+      await storageDelete(
+        `${question.question}.${QUESTIONS_TYPES_EXTENSIONS[question.question_type]}`
+      );
+    }
+    if(question.answer_type > 0) {
+      await storageDelete(
+        `${question.answer}.${QUESTIONS_TYPES_EXTENSIONS[question.answer_type]}`
+      );
+    }
+  }
 
   return true;
 };
