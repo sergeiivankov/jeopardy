@@ -114,6 +114,17 @@
         <input type="text" class="input" placeholder="Название" autocomplete="off"
                bind:value={ editSubject.name }>
       </div>
+      {#if editSubject.id}
+        <div class="field">
+          <div class="select is-fullwidth">
+            <select bind:value={ editSubject.round }>
+              {#each rounds as roundName, roundIndex}
+                <option value={ roundIndex }>{ roundName }</option>
+              {/each}
+            </select>
+          </div>
+        </div>
+      {/if}
     </div>
     <div slot="footer">
       <button class="button is-info" on:click={ saveSubject }>

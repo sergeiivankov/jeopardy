@@ -59,7 +59,7 @@
         {#each games as game}
           <tr>
             <td>{ game.name }</td>
-            <td class:has-text-success={ game.announced === 1 }>
+            <td class="is-narrow" class:has-text-success={ game.announced === 1 }>
               { game.announced === 1 ? 'Анонсирована' : 'Не анонсирована' }
             </td>
             <td class="is-narrow">

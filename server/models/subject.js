@@ -65,15 +65,31 @@ export const updateSubject = async (gameId, data) => {
   data = validate(schemaUpdate, data);
   if(typeof(data) === 'string') return data;
 
+  const subject = await DB.get(SQL`
+    SELECT round FROM subjects
+    WHERE id = ${data.id} AND game_id = ${gameId}
+    LIMIT 1
+  `);
+  if(!subject) return 'Тема с переданным идентификатором не найдена';
+
+  if(subject.round === 3 && data.round !== 3) {
+    return 'Нельзя перенести тему из финала в другой раунд';
+  }
+  if(subject.round !== 3 && data.round === 3) {
+    return 'Нельзя перенести тему в финал из другого раунда';
+  }
+
+  if(subject.round !== data.round) {
+    const maxRoundSubjectsCountResult = await checkMaxRoundSubjectsCount(gameId, data.round);
+    if(maxRoundSubjectsCountResult !== true) return maxRoundSubjectsCountResult;
+  }
+
   const subjectNameExists = await DB.get(SQL`
     SELECT id FROM subjects
     WHERE game_id = ${gameId} AND round = ${data.round} AND name = ${data.name} AND id != ${data.id}
     LIMIT 1
   `);
-  if(subjectNameExists) return 'Тема с таким названием уже существует в текущем раунде';
-
-  const maxRoundSubjectsCountResult = await checkMaxRoundSubjectsCount(gameId, data.round);
-  if(maxRoundSubjectsCountResult !== true) return maxRoundSubjectsCountResult;
+  if(subjectNameExists) return 'Тема с таким названием уже существует в раунде';
 
   await DB.run(SQL`
     UPDATE subjects
