@@ -15,7 +15,12 @@ export const checkGameOwner = async (ownerId, id) => {
 };
 
 export const getGames = async ownerId => {
-  return await DB.all(SQL`SELECT id, name, announced FROM games WHERE owner_id = ${ownerId}`);
+  return await DB.all(SQL`
+    SELECT G.id, G.name, G.announced, IFNULL(GROUP_CONCAT(GP.user_id), '') AS users FROM games AS G
+    LEFT JOIN games_participants AS GP ON G.id = GP.game_id
+    WHERE G.owner_id = ${ownerId}
+    GROUP BY G.id
+  `);
 };
 
 export const getGame = async (ownerId, id) => {
@@ -71,6 +76,32 @@ export const toggleGameAnnounced = async (ownerId, id) => {
   const game = await DB.get(SQL`SELECT announced FROM games WHERE id = ${id} LIMIT 1`);
 
   await DB.run(SQL`UPDATE games SET announced = ${game.announced ? 0 : 1} WHERE id = ${id}`);
+
+  return true;
+};
+
+export const setGameParcipants = async (ownerId, id, data) => {
+  if(!id) return 'Не передан идентификатор игры';
+  if(!data.users || !Array.isArray(data.users)) return 'Не переданы идентификаторы игроков';
+
+  data.users = data.users.map(id => parseInt(id, 10)).filter(id => Number.isInteger(id) && id > 0);
+
+  const checkOwner = await checkGameOwner(ownerId, id);
+  if(checkOwner !== true) return checkOwner;
+
+  await DB.run(SQL`DELETE FROM games_participants WHERE game_id = ${id}`);
+
+  if(data.users.length) {
+    const participantsStmt = SQL`INSERT INTO games_participants (game_id, user_id) VALUES`;
+
+    for(let i = 0, l = data.users.length; i < l; i++) {
+      const userId = data.users[i];
+      if(i === 0) participantsStmt.append(SQL` (${id}, ${userId})`);
+      else participantsStmt.append(SQL`, (${id}, ${userId})`);
+    }
+
+    await DB.run(participantsStmt);
+  }
 
   return true;
 };

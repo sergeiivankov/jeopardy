@@ -1,12 +1,14 @@
 <script>
   import { onMount, createEventDispatcher } from 'svelte';
   import Modal from '../common/Modal.svelte';
+  import { data } from '../common/data.js';
   import { get, post, put, del } from '../common/request.js';
 
   const dispatch = createEventDispatcher();
 
-  let editGame = null;
   let games = null;
+  let editGame = null;
+  let editUsers = null;
 
   const load = async () => {
     games = await get('/games');
@@ -45,6 +47,28 @@
     load();
   };
 
+  const openChangeUsers = game => {
+    editUsers = {
+      id: game.id,
+      users: game.users.split(',').filter(id => id !== '').map(id => parseInt(id, 10))
+    };
+  };
+
+  const saveUsers = async () => {
+    await put(`/games/${editUsers.id}/users`, { users: editUsers.users });
+    editUsers = null;
+    load();
+  };
+
+  const addUser = e => {
+    const id = e.target.value;
+    if(id === '') return;
+
+    editUsers.users = [ ...editUsers.users, parseInt(id, 10) ];
+
+    e.target.value = '';
+  };
+
   onMount(() => {
     load();
   });
@@ -73,7 +97,7 @@
             </td>
             <td class="is-narrow">
               <a href="#" class="link has-text-info"
-                 on:click|preventDefault={ () => toggleAnnounced(game.id, game.announced) }>
+                 on:click|preventDefault={ () => openChangeUsers(game) }>
                 Игроки
               </a>
             </td>
@@ -109,6 +133,39 @@
       <button class="button is-info" on:click={ save }>
         { editGame.id ? 'Сохранить' : 'Создать' }
       </button>
+    </div>
+  </Modal>
+{/if}
+
+{#if editUsers !== null}
+  <Modal title="Редактирование игроков" on:close={ () => editUsers = null }>
+    <div slot="body">
+      <div class="field is-grouped is-grouped-multiline">
+        {#each editUsers.users as id}
+          <div class="control">
+            <div class="tags has-addons">
+              <span class="tag is-medium">{ data.usersAssoc[id] }</span>
+              <a href="#" class="tag is-medium is-delete"
+                 on:click|preventDefault={ () => editUsers.users = editUsers.users.filter(i => i !== id) }></a>
+            </div>
+          </div>
+        {/each}
+      </div>
+      <div class="field">
+        <div class="select">
+          <select on:change={ addUser }>
+            <option value="">Добавить игрока</option>
+            {#each data.users as user}
+              {#if !editUsers.users.includes(user.id)}
+                <option value={ user.id }>{ user.name }</option>
+              {/if}
+            {/each}
+          </select>
+        </div>
+      </div>
+    </div>
+    <div slot="footer">
+      <button class="button is-info" on:click={ saveUsers }>Сохранить</button>
     </div>
   </Modal>
 {/if}
