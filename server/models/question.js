@@ -5,6 +5,7 @@ import { randomString } from '../helpers/common.js';
 import { storageExists, storageSave, storageDelete } from '../helpers/storage.js';
 import { validate } from '../helpers/validation.js';
 import { getSubjectByIdAndGame } from './subject.js';
+import e from 'express';
 
 const schemaUpdate = Joi.object({
   subject_id: Joi.number().required().integer().greater(0).messages({
@@ -18,17 +19,19 @@ const schemaUpdate = Joi.object({
     'number.min': 'Передан неверный тип вопроса',
     'number.max': 'Передан неверный тип вопроса'
   }),
-  answer_type: Joi.number().required().integer().min(0).max(3).messages({
-    'any.required': 'Тип ответа не передан',
-    'number.base': 'Тип ответа не является целым числом',
-    'number.min': 'Передан неверный тип ответа',
-    'number.max': 'Передан неверный тип ответа'
-  }),
   index: Joi.number().required().integer().min(0).max(4).messages({
     'any.required': 'Индекс не передан',
     'number.base': 'Индекс не является целым числом',
     'number.min': 'Передано неверное значение индекса',
     'number.max': 'Передано неверное значение индекса'
+  }),
+  question: Joi.string().required().trim().messages({
+    'any.required': 'Вопрос не передан',
+    'string.empty': 'Вопрос не может быть пустым'
+  }),
+  answer: Joi.string().required().trim().messages({
+    'any.required': 'Ответ не передан',
+    'string.empty': 'Ответ не может быть пустым'
   }),
   comment: Joi.string().allow('').required().trim().messages({
     'any.required': 'Комментарий не передан'
@@ -37,7 +40,7 @@ const schemaUpdate = Joi.object({
 
 export const getQuestionsBySubjects = async subjectsIds => {
   return await DB.all(SQL`
-    SELECT subject_id, "index", question_type, question, answer_type, answer, comment
+    SELECT subject_id, "index", question_type, question, question_file, answer, comment
     FROM questions WHERE subject_id IN (`.append(subjectsIds.join(',')).append(SQL`)
     ORDER BY "index" ASC
   `));
@@ -56,69 +59,56 @@ export const updateQuestion = async (gameId, data, files) => {
 
   if(data.comment === '') data.comment = null;
 
-  if(data.question_type === 0) {
-    data.question = String(data.question).trim();
-    if(data.question === '') return 'Вопрос не может быть пустым';
-  } else {
-    const file = files.find(f => f.fieldname === 'question');
-    if(!file) return 'Не передан файл вопроса';
-
-    let storageName;
-    let storageFullName;
-    do {
-      storageName = randomString(32);
-      storageFullName = `${storageName}.${QUESTIONS_TYPES_EXTENSIONS[data.question_type]}`;
-    } while(await storageExists(storageFullName));
-
-    if(data.question_type === 1) {
-      file.buffer = await sharp(file.buffer)
-        .resize({ width: 960, height: 960, fit: 'inside' })
-        .png({ compressionLevel: 9 })
-        .toBuffer()
-    }
-
-    await storageSave(storageFullName, file.buffer);
-    data.question = storageName;
-  }
-
-  if(data.answer_type === 0) {
-    data.answer = String(data.answer).trim();
-    if(data.answer === '') return 'Ответ не может быть пустым';
-  } else {
-    const file = files.find(f => f.fieldname === 'answer');
-    if(!file) return 'Не передан файл ответа';
-
-    let storageName;
-    let storageFullName;
-    do {
-      storageName = randomString(32);
-      storageFullName = `${storageName}.${QUESTIONS_TYPES_EXTENSIONS[data.answer_type]}`;
-    } while(await storageExists(storageFullName));
-
-    await storageSave(storageFullName, file.buffer);
-    data.answer = storageName;
-  }
-
   const question = await DB.get(SQL`
-    SELECT question_type, question, answer_type, answer
+    SELECT question_type, question_file
     FROM questions WHERE subject_id = ${data.subject_id} AND "index" = ${data.index}
     LIMIT 1
   `);
-  if(question.question_type > 0) {
-    await storageDelete(
-      `${question.question}.${QUESTIONS_TYPES_EXTENSIONS[question.question_type]}`
-    );
+
+  let deleteOldQuestionFile = false;
+  data.question_file = null;
+
+  if(data.question_type === 0) {
+    deleteOldQuestionFile = true;
+  } else {
+    const file = files.find(f => f.fieldname === 'question_file');
+
+    if(file) {
+      let storageName;
+      let storageFullName;
+      do {
+        storageName = randomString(32);
+        storageFullName = `${storageName}.${QUESTIONS_TYPES_EXTENSIONS[data.question_type]}`;
+      } while(await storageExists(storageFullName));
+
+      if(data.question_type === 1) {
+        file.buffer = await sharp(file.buffer)
+          .resize({ width: 960, height: 960, fit: 'inside' })
+          .png({ compressionLevel: 9 })
+          .toBuffer()
+      }
+
+      await storageSave(storageFullName, file.buffer);
+      data.question_file = storageName;
+
+      deleteOldQuestionFile = true;
+    } else if(data.question_type !== question.question_type) {
+      return 'Не передан файл вопроса';
+    } else {
+      data.question_file = question.question_file;
+    }
   }
-  if(question.answer_type > 0) {
+
+  if(deleteOldQuestionFile && question.question_type > 0) {
     await storageDelete(
-      `${question.answer}.${QUESTIONS_TYPES_EXTENSIONS[question.answer_type]}`
+      `${question.question_file}.${QUESTIONS_TYPES_EXTENSIONS[question.question_type]}`
     );
   }
 
   await DB.run(SQL`
     UPDATE questions
     SET question_type = ${data.question_type}, question = ${data.question},
-        answer_type = ${data.answer_type}, answer = ${data.answer},
+        question_file = ${data.question_file}, answer = ${data.answer},
         comment = ${data.comment}
     WHERE subject_id = ${data.subject_id} AND "index" = ${data.index}
   `);

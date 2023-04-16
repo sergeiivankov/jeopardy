@@ -121,12 +121,7 @@ export const deleteSubject = async (gameId, id) => {
   for(let question of questions) {
     if(question.question_type > 0) {
       await storageDelete(
-        `${question.question}.${QUESTIONS_TYPES_EXTENSIONS[question.question_type]}`
-      );
-    }
-    if(question.answer_type > 0) {
-      await storageDelete(
-        `${question.answer}.${QUESTIONS_TYPES_EXTENSIONS[question.answer_type]}`
+        `${question.question_file}.${QUESTIONS_TYPES_EXTENSIONS[question.question_type]}`
       );
     }
   }

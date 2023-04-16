@@ -22,8 +22,7 @@
   let editSubject = null;
   let editQuestion = null;
 
-  let questionQuestionInput = null;
-  let questionAnswerInput = null;
+  let questionFileInput = null;
 
   const load = async () => {
     game = await get('/games/' + id);
@@ -67,8 +66,7 @@
     } else {
       editQuestion = {
         ...question,
-        question_type: String(question.question_type),
-        answer_type: String(question.answer_type)
+        question_type: String(question.question_type)
       }
     }
   };
@@ -78,29 +76,13 @@
     body.append('subject_id', editQuestion.subject_id);
     body.append('index', editQuestion.index);
     body.append('comment', editQuestion.comment || '');
+    body.append('question', editQuestion.question || '');
+    body.append('answer', editQuestion.answer || '');
 
-    const questionType = !editQuestion.question_type ? -1 : parseInt(editQuestion.question_type, 10);
-    const answerType = !editQuestion.answer_type ? -1 : parseInt(editQuestion.answer_type, 10);
-    body.append('question_type', questionType);
-    body.append('answer_type', answerType);
+    body.append('question_type', editQuestion.question_type);
 
-    if(questionType !== -1) {
-      if(questionType === 0) body.append('question', questionQuestionInput.value);
-      else {
-        if(!questionQuestionInput.files.length) {
-          return alert('Необходимо выбрать файл для вопроса');
-        }
-        else body.append('question', questionQuestionInput.files[0]);
-      }
-    }
-    if(answerType !== -1) {
-      if(answerType === 0) body.append('answer', questionAnswerInput.value);
-      else {
-        if(!questionAnswerInput.files.length) {
-          return alert('Необходимо выбрать файл для ответа');
-        }
-        else body.append('answer', questionAnswerInput.files[0]);
-      }
+    if(editQuestion.question_type !== '0' && questionFileInput.files.length) {
+      body.append('question_file', questionFileInput.files[0]);
     }
 
     const result = await putMultipart(`/questions/${id}`, body);
@@ -151,7 +133,7 @@
       <div class="ml-5">
         <div class="level">
           <div class="level-left">
-            <div class="title is-5 mr-3 mb-0">Тема: { subject.name }</div>
+            <div class="title is-5 mr-3 mb-0">{ subject.name }</div>
             <a href="#" class="link has-text-info mr-3"
                on:click|preventDefault={ () => editSubject = { ...subject } }>Изменить</a>
             <a href="#" class="link has-text-danger"
@@ -187,45 +169,26 @@
                     { subjectsQuestions[subject.id][priceIndex].question }
                   {/if}
                   {#if subjectsQuestions[subject.id][priceIndex].question_type === 1}
-                    <img src="/storage/{ subjectsQuestions[subject.id][priceIndex].question }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].question_type] }" class="mt-2">
+                    <img src="/storage/{ subjectsQuestions[subject.id][priceIndex].question_file }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].question_type] }" class="mt-2">
                   {/if}
                   {#if subjectsQuestions[subject.id][priceIndex].question_type === 2}
                     <audio controls preload="none" class="mt-2" style="width:100%"
-                           src="/storage/{ subjectsQuestions[subject.id][priceIndex].question }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].question_type] }">
+                           src="/storage/{ subjectsQuestions[subject.id][priceIndex].question_file }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].question_type] }">
                     </audio>
                   {/if}
                   {#if subjectsQuestions[subject.id][priceIndex].question_type === 3}
                     <video controls preload="none" class="mt-2" style="width:100%"
-                           src="/storage/{ subjectsQuestions[subject.id][priceIndex].question }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].question_type] }">
+                           src="/storage/{ subjectsQuestions[subject.id][priceIndex].question_file }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].question_type] }">
                     </video>
                   {/if}
                 {/if}
               </div>
               <div class="column is-5">
                 <b>Ответ:</b><br>
-                {#if subjectsQuestions[subject.id][priceIndex].answer_type === null}
-                  Не указан
-                {:else}
-                  {#if subjectsQuestions[subject.id][priceIndex].answer_type === 0}
-                    { subjectsQuestions[subject.id][priceIndex].answer }
-                  {/if}
-                  {#if subjectsQuestions[subject.id][priceIndex].answer_type === 1}
-                    <img src="/storage/{ subjectsQuestions[subject.id][priceIndex].answer }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].answer_type] }" class="mt-2">
-                  {/if}
-                  {#if subjectsQuestions[subject.id][priceIndex].answer_type === 2}
-                    <audio controls preload="none" class="mt-2" style="width:100%"
-                           src="/storage/{ subjectsQuestions[subject.id][priceIndex].answer }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].answer_type] }">
-                    </audio>
-                  {/if}
-                  {#if subjectsQuestions[subject.id][priceIndex].answer_type === 3}
-                    <video controls preload="none" class="mt-2" style="width:100%"
-                           src="/storage/{ subjectsQuestions[subject.id][priceIndex].answer }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].answer_type] }">
-                    </video>
-                  {/if}
-                {/if}
+                { subjectsQuestions[subject.id][priceIndex].answer || 'Не указан' }
               </div>
               {#if subjectsQuestions[subject.id][priceIndex].comment}
-                <div class="column is-10 is-offset-2 has-text-grey-light">
+                <div class="column is-10 is-offset-2 has-text-grey-light pt-0">
                   <b>Комментарий:</b> { subjectsQuestions[subject.id][priceIndex].comment }
                 </div>
               {/if}
@@ -269,77 +232,38 @@
   <Modal title="Редактирование вопроса" on:close={ () => editQuestion = null }>
     <div slot="body">
       <div class="field">
-        <div class="select is-fullwidth">
-          <select bind:value={ editQuestion.question_type }>
-            <option value="">Тип вопроса</option>
-            <option value="0">Вопрос: Текст</option>
-            <option value="1">Вопрос: Изображение</option>
-            <option value="2">Вопрос: Аудио</option>
-            <option value="3">Вопрос: Видео</option>
-          </select>
-        </div>
+        <input type="text" class="input" placeholder="Вопрос" autocomplete="off"
+               bind:value={ editQuestion.question }>
       </div>
-      {#if !editQuestion.question_type}
-        <div class="field" style="height:40px"></div>
-      {:else}
-        {#if editQuestion.question_type === '0'}
-          <div class="field">
-            <input type="text" class="input" placeholder="Вопрос" autocomplete="off"
-                  bind:this={ questionQuestionInput } value={ editQuestion.question }>
-          </div>
-        {:else}
-          <div class="field">
-            <div class="file has-name is-fullwidth">
-              <label class="file-label">
-                <input class="file-input" type="file" bind:this={ questionQuestionInput }
-                       on:change={ e => editQuestion.questionFileName = e.target.files[0].name }
-                       accept=".{ data.QUESTIONS_TYPES_EXTENSIONS[editQuestion.question_type] }">
-                <div class="file-cta">
-                  <div class="file-label">Выбрать файл</div>
-                </div>
-                <div class="file-name">{ editQuestion.questionFileName || 'Файл не выбран' }</div>
-              </label>
-            </div>
-          </div>
-        {/if}
-      {/if}
-      <div class="field" style="height:0.5rem"></div>
       <div class="field">
         <div class="select is-fullwidth">
-          <select bind:value={ editQuestion.answer_type }>
-            <option value="">Тип ответа</option>
-            <option value="0">Ответ: Текст</option>
-            <option value="1">Ответ: Изображение</option>
-            <option value="2">Ответ: Аудио</option>
-            <option value="3">Ответ: Видео</option>
+          <select bind:value={ editQuestion.question_type }>
+            <option value="0">Только текстовый вопрос</option>
+            <option value="1">С изображением</option>
+            <option value="2">С аудио</option>
+            <option value="3">С видео</option>
           </select>
         </div>
       </div>
-      {#if !editQuestion.answer_type}
-        <div class="field" style="height:40px"></div>
-      {:else}
-        {#if editQuestion.answer_type === '0'}
-          <div class="field">
-            <input type="text" class="input" placeholder="Ответ" autocomplete="off"
-                  bind:this={ questionAnswerInput } value={ editQuestion.answer }>
+      {#if editQuestion.question_type !== '0'}
+        <div class="field">
+          <div class="file has-name is-fullwidth">
+            <label class="file-label">
+              <input class="file-input" type="file" bind:this={ questionFileInput }
+                      on:change={ e => editQuestion.questionFileName = e.target.files[0].name }
+                      accept=".{ data.QUESTIONS_TYPES_EXTENSIONS[editQuestion.question_type] }">
+              <div class="file-cta">
+                <div class="file-label">Выбрать файл</div>
+              </div>
+              <div class="file-name">{ editQuestion.questionFileName || 'Файл не выбран' }</div>
+            </label>
           </div>
-        {:else}
-          <div class="field">
-            <div class="file has-name is-fullwidth">
-              <label class="file-label">
-                <input class="file-input" type="file" bind:this={ questionAnswerInput }
-                       on:change={ e => editQuestion.answerFileName = e.target.files[0].name }
-                       accept=".{ data.QUESTIONS_TYPES_EXTENSIONS[editQuestion.answer_type] }">
-                <div class="file-cta">
-                  <div class="file-label">Выбрать файл</div>
-                </div>
-                <div class="file-name">{ editQuestion.answerFileName || 'Файл не выбран' }</div>
-              </label>
-            </div>
-          </div>
-        {/if}
+        </div>
       {/if}
-      <div class="field" style="height:0.5rem"></div>
+      <div class="field">
+        <input type="text" class="input" placeholder="Ответ" autocomplete="off"
+               bind:value={ editQuestion.answer }>
+      </div>
       <div class="field">
         <input type="text" class="input" placeholder="Комментарий" autocomplete="off"
                bind:value={ editQuestion.comment }>
