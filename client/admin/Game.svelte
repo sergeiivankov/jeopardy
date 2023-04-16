@@ -59,6 +59,20 @@
     load();
   };
 
+  const openEditQuestion = (subjectId, priceIndex) => {
+    const question = subjectsQuestions[subjectId][priceIndex];
+
+    if(question.question_type === null) {
+      editQuestion = { subject_id: subjectId, index: priceIndex };
+    } else {
+      editQuestion = {
+        ...question,
+        question_type: String(question.question_type),
+        answer_type: String(question.answer_type)
+      }
+    }
+  };
+
   const saveQuestion = async () => {
     const body = new FormData();
     body.append('subject_id', editQuestion.subject_id);
@@ -160,7 +174,7 @@
                 <a href="#" class="link"
                    class:has-text-warning-dark={ subjectsQuestions[subject.id][priceIndex].question_type === null }
                    class:has-text-info={ subjectsQuestions[subject.id][priceIndex].question_type !== null }
-                   on:click|preventDefault={ () => editQuestion = { subject_id: subject.id, index: priceIndex } }>
+                   on:click|preventDefault={ () => openEditQuestion(subject.id, priceIndex) }>
                   Изменить
                 </a>
               </div>
@@ -271,7 +285,7 @@
         {#if editQuestion.question_type === '0'}
           <div class="field">
             <input type="text" class="input" placeholder="Вопрос" autocomplete="off"
-                  bind:this={ questionQuestionInput }>
+                  bind:this={ questionQuestionInput } value={ editQuestion.question }>
           </div>
         {:else}
           <div class="field">
@@ -307,7 +321,7 @@
         {#if editQuestion.answer_type === '0'}
           <div class="field">
             <input type="text" class="input" placeholder="Ответ" autocomplete="off"
-                  bind:this={ questionAnswerInput }>
+                  bind:this={ questionAnswerInput } value={ editQuestion.answer }>
           </div>
         {:else}
           <div class="field">
