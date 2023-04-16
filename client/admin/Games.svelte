@@ -40,6 +40,11 @@
     load();
   };
 
+  const toggleAnnounced = async id => {
+    await put(`/games/${id}/announced`);
+    load();
+  };
+
   onMount(() => {
     load();
   });
@@ -59,16 +64,28 @@
         {#each games as game}
           <tr>
             <td>{ game.name }</td>
-            <td class="is-narrow" class:has-text-success={ game.announced === 1 }>
-              { game.announced === 1 ? 'Анонсирована' : 'Не анонсирована' }
+            <td class="is-narrow">
+              <a href="#" class="link has-text-info"
+                 class:has-text-success={ game.announced === 1 }
+                 on:click|preventDefault={ () => toggleAnnounced(game.id) }>
+                { game.announced === 1 ? 'Деанонсировать' : 'Анонсировать' }
+              </a>
+            </td>
+            <td class="is-narrow">
+              <a href="#" class="link has-text-info"
+                 on:click|preventDefault={ () => toggleAnnounced(game.id, game.announced) }>
+                Игроки
+              </a>
+            </td>
+            <td class="is-narrow">
+              <a href="#" class="link has-text-info"
+                on:click|preventDefault={ () => dispatch('edit', game.id) }>
+                Редактировать вопросы
+              </a>
             </td>
             <td class="is-narrow">
               <a href="#" class="link has-text-info mr-2"
                 on:click|preventDefault={ () => editGame = { ...game } }>Изменить</a>
-              <a href="#" class="link has-text-info mr-2"
-                on:click|preventDefault={ () => dispatch('edit', game.id) }>
-                Редактировать вопросы
-              </a>
               <a href="#" class="link has-text-danger"
                 on:click|preventDefault={ () => deleteGame(game.id) }>Удалить</a>
             </td>

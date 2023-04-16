@@ -62,6 +62,19 @@ export const updateGame = async (ownerId, data) => {
   return true;
 };
 
+export const toggleGameAnnounced = async (ownerId, id) => {
+  if(!id) return 'Не передан идентификатор игры';
+
+  const checkOwner = await checkGameOwner(ownerId, id);
+  if(checkOwner !== true) return checkOwner;
+
+  const game = await DB.get(SQL`SELECT announced FROM games WHERE id = ${id} LIMIT 1`);
+
+  await DB.run(SQL`UPDATE games SET announced = ${game.announced ? 0 : 1} WHERE id = ${id}`);
+
+  return true;
+};
+
 export const deleteGame = async (ownerId, id) => {
   if(!id) return 'Не передан идентификатор игры';
 

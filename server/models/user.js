@@ -23,6 +23,10 @@ export const getUsers = async () => {
   return await DB.all('SELECT id, name, password FROM users');
 };
 
+export const getUsersData = async () => {
+  return await DB.all('SELECT id, name FROM users');
+};
+
 export const createUser = async data => {
   data = validate(schemaCreate, data);
   if(typeof(data) === 'string') return data;

@@ -28,6 +28,12 @@
     const data = await get('/data');
     if(!data) return;
 
+    const usersAssoc = {};
+    for(const user of data.users) {
+      usersAssoc[user.id] = user.name;
+    }
+    data.usersAssoc = usersAssoc;
+
     setData(data);
     page = 'games';
   };

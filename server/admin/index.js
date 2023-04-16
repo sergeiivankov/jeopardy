@@ -4,7 +4,7 @@ import { sendHtmlFile, sendNotFound } from '../helpers/common.js';
 import {
   MAX_ROUND_SUBJECTS_COUNT, QUESTIONS_TYPES_EXTENSIONS, REQUIRED_ROUND_SUBJECTS_COUNT, ROUND_PRICES
 } from '../helpers/consts.js';
-import { getUserIdByToken } from '../models/user.js';
+import { getUserIdByToken, getUsersData } from '../models/user.js';
 
 import gamesRouter from './games.js';
 import questionsRouter from './questions.js';
@@ -38,13 +38,15 @@ router.get('/check', (req, res) => {
   res.json({ ok: true, res: res.locals.userId === 0 });
 });
 
-router.get('/data', (req, res) => {
+router.get('/data', asyncHandler(async (req, res) => {
   const data = {
     MAX_ROUND_SUBJECTS_COUNT, QUESTIONS_TYPES_EXTENSIONS,
     REQUIRED_ROUND_SUBJECTS_COUNT, ROUND_PRICES
   };
+  data.users = await getUsersData();
+
   res.json({ ok: true, res: data });
-});
+}));
 
 router.use('/games', gamesRouter);
 router.use('/questions', questionsRouter);
