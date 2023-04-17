@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { applyFlat } from '../helpers/common.js';
 import { REQUIRED_ROUND_SUBJECTS_COUNT, ROUND_NAMES } from '../helpers/consts.js';
 import { validate, ruleId, ruleName } from '../helpers/validation.js';
 import { getFilledQuestionsCountBySubject } from './question.js';
@@ -23,6 +24,45 @@ export const getGame = async (ownerId, id) => {
   if(!game) return 'Игры с переданным идентификатором не существует';
 
   return game;
+};
+
+export const getGameRole = async (userId, gameId) => {
+  const game = await DB.get(SQL`
+    SELECT owner_id FROM games WHERE id = ${gameId} LIMIT 1
+  `);
+  if(!game) return null;
+
+  if(userId === game.owner_id) return 'owner';
+
+  const participant = await DB.get(SQL`
+    SELECT game_id FROM games_participants
+    WHERE game_id = ${gameId} AND user_id = ${userId} LIMIT 1
+  `);
+  if(!participant) return null;
+
+  return 'player';
+};
+
+export const getGameState = async id => {
+  const game = await DB.get(SQL`
+    SELECT state FROM games WHERE id = ${id} LIMIT 1
+  `);
+  if(!game) return {};
+
+  return JSON.parse(game.state);
+};
+
+export const updateGameState = async (id, newState) => {
+  const game = await DB.get(SQL`
+    SELECT state FROM games WHERE id = ${id} LIMIT 1
+  `);
+  if(!game) return;
+
+  const state = applyFlat(JSON.parse(game.state), newState);
+
+  await DB.run(SQL`
+    UPDATE games SET state = ${JSON.stringify(state)} WHERE id = ${id}
+  `);
 };
 
 export const createGame = async (ownerId, data) => {
@@ -102,29 +142,48 @@ export const toggleGameAnnounced = async (ownerId, id) => {
     if(players.length < 2) return 'В игре должны быть минимум 2 игрока';
 
     const playersAssoc = {};
-    for(let player of players) playersAssoc[player.id] = player.name;
+    const playersOnline = {};
+    for(let player of players) {
+      playersAssoc[player.id] = player.name;
+      playersOnline[player.id] = 0;
+    }
 
     const initState = {
       round: 0,
       screen: 'pause',
-      screenData: {},
+      screenData: {
+        prevScreen: 'table',
+        prevScreenData: {}
+      },
       players: playersAssoc,
-      activePlayer: players[Math.floor(Math.random() * players.length)].id
+      playersOnline: playersOnline,
+      activePlayer: players[Math.floor(Math.random() * players.length)].id,
+      log: []
     };
 
+    const subjectsNames = {};
+    for(let subject of subjects) {
+      subjectsNames[subject.id] = subject.name;
+    }
+
     const availableQuestions = [];
+
     for(let roundIndex in roundsSubjectsCounts) {
       const subjectsCount = roundsSubjectsCounts[roundIndex];
       if(subjectsCount === 0) break;
 
-      availableQuestions.push([]);
+      availableQuestions.push({});
 
-      for(let subjectIndex = 0; subjectIndex < subjectsCount; subjectIndex++) {
-        const needQuestionCount = roundIndex === '3' ? 1 : 5;
-        availableQuestions[roundIndex].push( Array(needQuestionCount).fill(1))
+      const needQuestionCount = roundIndex === '3' ? 1 : 5;
+
+      for(let subject of subjects) {
+        if(subject.round != roundIndex) continue;
+
+        availableQuestions[roundIndex][subject.id] = Array(needQuestionCount).fill(1);
       }
     }
 
+    initState.subjectsNames = subjectsNames;
     initState.availableQuestions = availableQuestions;
 
     await DB.run(SQL`
@@ -137,7 +196,7 @@ export const toggleGameAnnounced = async (ownerId, id) => {
   return true;
 };
 
-export const setGameParcipants = async (ownerId, id, data) => {
+export const setGameParticipants = async (ownerId, id, data) => {
   if(!id) return 'Не передан идентификатор игры';
   if(!data.users || !Array.isArray(data.users)) return 'Не переданы идентификаторы игроков';
 
@@ -176,8 +235,6 @@ export const deleteGame = async (ownerId, id) => {
   for(let subject of subjects) await deleteSubject(id, subject.id);
 
   await DB.run(SQL`DELETE FROM games WHERE id = ${id}`);
-
-  // TODO: not delete announced games
 
   return true;
 };

@@ -3,7 +3,7 @@ import asyncHandler from 'express-async-handler';
 import { handleBoolResult } from '../helpers/common.js';
 import {
   getGames, getGame, createGame, updateGame, deleteGame,
-  toggleGameAnnounced, setGameParcipants
+  toggleGameAnnounced, setGameParticipants
 } from '../models/game.js';
 import { getSubjectsByGame } from '../models/subject.js';
 import { getQuestionsBySubjects } from '../models/question.js';
@@ -40,7 +40,7 @@ router.put('/:id(\\d+)/announced', asyncHandler(async (req, res) => {
 }));
 
 router.put('/:id(\\d+)/users', asyncHandler(async (req, res) => {
-  handleBoolResult(res, await setGameParcipants(res.locals.userId, parseInt(req.params.id, 10), req.body));
+  handleBoolResult(res, await setGameParticipants(res.locals.userId, parseInt(req.params.id, 10), req.body));
 }));
 
 router.delete('/:id(\\d+)', asyncHandler(async (req, res) => {

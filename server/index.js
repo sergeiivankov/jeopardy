@@ -4,6 +4,7 @@ import compression from 'compression';
 import express from 'express';
 import helmet from 'helmet';
 
+import initSocket from './socket.js';
 import { createAppServer, createRedirectServer } from './helpers/create-server.js';
 import errorsHandle from './helpers/errors-handle.js';
 import gracefulShutdown from './helpers/graceful-shutdown.js';
@@ -48,6 +49,8 @@ errorsHandle(app);
   const servers = {};
   servers.appServer = createAppServer(app);
   servers.redirectServer = createRedirectServer();
+
+  initSocket(servers.appServer);
 
   gracefulShutdown(servers);
 })();
