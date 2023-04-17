@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
 
   import Auth from '../common/Auth.svelte';
+  import Control from './Control.svelte';
   import Game from './Game.svelte';
   import Games from './Games.svelte';
   import Users from './Users.svelte';
@@ -13,6 +14,7 @@
 
   let page = null;
   let editGameId = 0;
+  let controlGame = null;
 
   const logout = () => {
     setToken(null);
@@ -83,7 +85,7 @@
 
   <div class="container mt-5">
     {#if page == 'games'}
-      <Games on:edit={ editGame }/>
+      <Games on:edit={ editGame } on:control={ e => controlGame = e.detail }/>
     {/if}
     {#if page == 'gameEdit'}
       <Game id={ editGameId }/>
@@ -92,6 +94,10 @@
       <Users/>
     {/if}
   </div>
+{/if}
+
+{#if controlGame !== null}
+  <Control game={ controlGame } on:close={ () => controlGame = null }/>
 {/if}
 
 {#if $loadingTimes > 0}

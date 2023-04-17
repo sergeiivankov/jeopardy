@@ -35,11 +35,21 @@ hr {
   cursor: not-allowed;
 }
 
+.game-control {
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  z-index: 999;
+  background-color: #f5f5f5;
+  padding: 1.5rem;
+}
+
 .link.disabled, .link.disabled:hover, .link.disabled:active, .link.disabled:focus {
   color: #7a7a7a !important;
   text-decoration: underline;
 }
-
 
 .lds-ellipsis {
   display: block;

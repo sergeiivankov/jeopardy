@@ -89,8 +89,13 @@
           <tr>
             <td>{ game.name }</td>
             <td class="is-narrow">
+              {#if game.announced === 1}
+                <a href="#" class="link has-text-success mr-2"
+                   on:click|preventDefault={ () => dispatch('control', game) }>
+                  Управление игрой
+                </a>
+              {/if}
               <a href="#" class="link has-text-info"
-                 class:has-text-success={ game.announced === 1 }
                  on:click|preventDefault={ () => toggleAnnounced(game.id) }>
                 { game.announced === 1 ? 'Деанонсировать' : 'Анонсировать' }
               </a>

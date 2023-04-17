@@ -134,8 +134,6 @@ export const toggleGameAnnounced = async (ownerId, id) => {
     await DB.run(SQL`UPDATE games SET announced = 0, state = NULL WHERE id = ${id}`);
   }
 
-
-
   return true;
 };
 
