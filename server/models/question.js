@@ -45,6 +45,12 @@ export const getQuestionsBySubjects = async subjectsIds => {
   `));
 };
 
+export const getFilledQuestionsCountBySubject = async subjectId => {
+  return (await DB.get(SQL`
+    SELECT COUNT(subject_id) AS count FROM questions WHERE subject_id = ${subjectId} AND question_type IS NOT NULL
+  `)).count;
+};
+
 export const updateQuestion = async (gameId, data, files) => {
   data = validate(schemaUpdate, data);
   if(typeof(data) === 'string') return data;

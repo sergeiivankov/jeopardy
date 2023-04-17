@@ -110,7 +110,7 @@
   <div class="block has-text-centered">
     <div class="title">{ game.name }</div>
   </div>
-  {#each rounds as roundName, roundIndex}
+  {#each data.ROUND_NAMES as roundName, roundIndex}
     <hr>
     <div class="level mb-5">
       <div class="level-left">
@@ -212,7 +212,7 @@
         <div class="field">
           <div class="select is-fullwidth">
             <select bind:value={ editSubject.round }>
-              {#each rounds as roundName, roundIndex}
+              {#each data.ROUND_NAMES as roundName, roundIndex}
                 <option value={ roundIndex }>{ roundName }</option>
               {/each}
             </select>

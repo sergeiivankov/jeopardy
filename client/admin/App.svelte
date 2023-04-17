@@ -74,6 +74,7 @@
           {/if}
         </div>
         <div class="navbar-end">
+          <a href="/" class="navbar-item">В раздел игрока</a>
           <a href="#" class="navbar-item" on:click|preventDefault={ logout }>Выйти</a>
         </div>
       </div>

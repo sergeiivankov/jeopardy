@@ -1,18 +1,11 @@
 import Joi from 'joi';
+import { REQUIRED_ROUND_SUBJECTS_COUNT, ROUND_NAMES } from '../helpers/consts.js';
 import { validate, ruleId, ruleName } from '../helpers/validation.js';
+import { getFilledQuestionsCountBySubject } from './question.js';
 import { getSubjectsByGame, deleteSubject } from './subject.js';
 
 const schemaCreate = Joi.object(ruleName);
 const schemaUpdate = schemaCreate.append(ruleId).unknown();
-
-const checkGameOwner = async (ownerId, id) => {
-  const gameExists = await DB.get(SQL`
-    SELECT id FROM games WHERE id = ${id} AND owner_id = ${ownerId} LIMIT 1
-  `);
-  if(!gameExists) return 'Игры с переданным идентификатором не существует';
-
-  return true;
-};
 
 export const getGames = async ownerId => {
   return await DB.all(SQL`
@@ -24,12 +17,12 @@ export const getGames = async ownerId => {
 };
 
 export const getGame = async (ownerId, id) => {
-  const checkOwner = await checkGameOwner(ownerId, id);
-  if(checkOwner !== true) return checkOwner;
-
-  return await DB.get(SQL`
+  const game = await DB.get(SQL`
     SELECT id, name, announced FROM games WHERE id = ${id} AND owner_id = ${ownerId} LIMIT 1
   `);
+  if(!game) return 'Игры с переданным идентификатором не существует';
+
+  return game;
 };
 
 export const createGame = async (ownerId, data) => {
@@ -71,10 +64,36 @@ export const updateGame = async (ownerId, data) => {
 export const toggleGameAnnounced = async (ownerId, id) => {
   if(!id) return 'Не передан идентификатор игры';
 
-  const checkOwner = await checkGameOwner(ownerId, id);
-  if(checkOwner !== true) return checkOwner;
+  const game = await getGame(ownerId, id);
+  if(typeof(game) === 'string') return game;
 
-  const game = await DB.get(SQL`SELECT announced FROM games WHERE id = ${id} LIMIT 1`);
+  if(game.announced === 0) {
+    const subjects = await getSubjectsByGame(id);
+
+    const roundsCounts = [0, 0, 0, 0, 0, 0, 0];
+    for(let subject of subjects) {
+      roundsCounts[subject.round]++;
+    }
+
+    const errors = [];
+
+    for(let index in roundsCounts) {
+      if(roundsCounts[index] < REQUIRED_ROUND_SUBJECTS_COUNT[index]) {
+        errors.push(`${ROUND_NAMES[index]} содержит ${roundsCounts[index]} из ${REQUIRED_ROUND_SUBJECTS_COUNT[index]} требуемых тем`);
+      }
+    }
+
+    for(let subject of subjects) {
+      const needQuestionCount = subject.round === 3 ? 1 : 5;
+      const questionCount = await getFilledQuestionsCountBySubject(subject.id);
+
+      if(questionCount < needQuestionCount) {
+        errors.push(`В теме ${subject.name} есть незаполненные вопросы`);
+      }
+    }
+
+    if(errors.length) return errors.join('\n');
+  }
 
   await DB.run(SQL`UPDATE games SET announced = ${game.announced ? 0 : 1} WHERE id = ${id}`);
 

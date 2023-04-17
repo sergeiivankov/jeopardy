@@ -2,7 +2,8 @@ import { Router } from 'express';
 import asyncHandler from 'express-async-handler';
 import { sendHtmlFile, sendNotFound } from '../helpers/common.js';
 import {
-  MAX_ROUND_SUBJECTS_COUNT, QUESTIONS_TYPES_EXTENSIONS, REQUIRED_ROUND_SUBJECTS_COUNT, ROUND_PRICES
+  MAX_ROUND_SUBJECTS_COUNT, QUESTIONS_TYPES_EXTENSIONS, REQUIRED_ROUND_SUBJECTS_COUNT,
+  ROUND_PRICES, ROUND_NAMES
 } from '../helpers/consts.js';
 import { getUserIdByToken, getUsersData } from '../models/user.js';
 
@@ -41,7 +42,7 @@ router.get('/check', (req, res) => {
 router.get('/data', asyncHandler(async (req, res) => {
   const data = {
     MAX_ROUND_SUBJECTS_COUNT, QUESTIONS_TYPES_EXTENSIONS,
-    REQUIRED_ROUND_SUBJECTS_COUNT, ROUND_PRICES
+    REQUIRED_ROUND_SUBJECTS_COUNT, ROUND_PRICES, ROUND_NAMES
   };
   data.users = await getUsersData();
 
