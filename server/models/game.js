@@ -17,6 +17,16 @@ export const getGames = async ownerId => {
   `);
 };
 
+export const getPlayerGames = async userId => {
+  return await DB.all(SQL`
+    SELECT G.id, G.name, O.name AS owner_name FROM games_participants AS GP
+    LEFT JOIN games AS G ON G.id = GP.game_id
+    LEFT JOIN users AS O ON O.id = G.owner_id
+    WHERE GP.user_id = ${userId}
+    ORDER BY G.name
+  `);
+};
+
 export const getGame = async (ownerId, id) => {
   const game = await DB.get(SQL`
     SELECT id, name, announced FROM games WHERE id = ${id} AND owner_id = ${ownerId} LIMIT 1

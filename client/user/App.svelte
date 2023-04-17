@@ -2,12 +2,15 @@
   import { onMount } from 'svelte';
 
   import Auth from '../common/Auth.svelte';
+  import Game from './Game.svelte';
+  import Games from './Games.svelte';
   import Rules from './Rules.svelte';
   import { token, setToken } from '../common/auth.js';
   import { data, setData } from '../common/data.js';
   import { loadingTimes, get } from '../common/request.js';
 
   let page = null;
+  let game = null;
 
   const logout = () => {
     setToken(null);
@@ -62,11 +65,18 @@
     </div>
 
     <div class="container mt-5 is-mobile">
+      {#if page == 'games'}
+        <Games on:open={ e => game = e.detail }/>
+      {/if}
       {#if page == 'rules'}
         <Rules/>
       {/if}
     </div>
   {/if}
+{/if}
+
+{#if game !== null}
+  <Game game={ game } on:close={ () => game = null }/>
 {/if}
 
 {#if $loadingTimes > 0}

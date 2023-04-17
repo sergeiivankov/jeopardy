@@ -63,7 +63,7 @@
   };
 </script>
 
-<div class="game-control">
+<div class="game">
   {#if state !== null}
     <div class="level">
       <div class="level-left">

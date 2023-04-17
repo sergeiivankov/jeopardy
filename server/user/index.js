@@ -2,6 +2,7 @@ import { Router } from 'express';
 import asyncHandler from 'express-async-handler';
 import { sendHtmlFile } from '../helpers/common.js';
 import { ROUND_PRICES, ROUND_NAMES } from '../helpers/consts.js';
+import { getPlayerGames } from '../models/game.js';
 import { getUserByToken } from '../models/user.js';
 
 const router = Router();
@@ -31,6 +32,10 @@ router.get('/data', asyncHandler(async (req, res) => {
   data.userName = res.locals.userName;
 
   res.json({ ok: true, res: data });
+}));
+
+router.get('/games', asyncHandler(async (req, res) => {
+  res.json({ ok: true, res: await getPlayerGames(res.locals.userId) });
 }));
 
 export default router;
