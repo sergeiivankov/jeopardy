@@ -153,9 +153,11 @@ export const toggleGameAnnounced = async (ownerId, id) => {
 
     const playersAssoc = {};
     const playersOnline = {};
+    const scores = {};
     for(let player of players) {
       playersAssoc[player.id] = player.name;
       playersOnline[player.id] = 0;
+      scores[player.id] = 0;
     }
 
     const initState = {
@@ -167,6 +169,7 @@ export const toggleGameAnnounced = async (ownerId, id) => {
       },
       players: playersAssoc,
       playersOnline: playersOnline,
+      scores: scores,
       activePlayer: players[Math.floor(Math.random() * players.length)].id,
       log: []
     };

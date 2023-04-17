@@ -44,14 +44,22 @@
   });
 </script>
 
-<div class="game">
+<div class="game is-player">
   {#if state !== null}
+    <div class="scores">
+      {#each Object.entries(state.players) as [userId, userName]}
+        <div class="scores-item"
+             class:scores-item-active={ state.activePlayer == userId }>
+          <div class="scores-name">{ userName }</div>
+          <div class="scores-value">{ state.scores[userId] }</div>
+        </div>
+      {/each}
+    </div>
+
     {#if state.screen === 'pause'}
-      <div class="game" style="display:flex;justify-content:center;align-items:center">
+      <div class="game" style="display:flex;justify-content:center;align-items:center;display:none">
         Игра на паузе
       </div>
-    {:else}
-      123
     {/if}
   {/if}
 </div>

@@ -46,6 +46,51 @@ hr {
   padding: 1.5rem;
 }
 
+.game.is-player {
+  padding: 0;
+}
+
+@media screen and (min-width: 1024px) {
+  .game {
+    padding: 1.5rem;
+  }
+}
+
+.scores {
+  display: flex;
+  padding: 0.5rem;
+  font-size: 12px;
+}
+
+.scores-item {
+  margin-right: 0.5rem;
+  border: 1px solid #dbdbdb;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  text-align: center;
+  flex-grow: 1;
+}
+
+.scores-item:last-child {
+  margin-right: 0;
+}
+
+.scores-item-active {
+  background: #c4e4ff;
+}
+
+.scores-name {
+  padding: 0.25rem;
+  font-weight: 700;
+}
+
+.scores-value {
+  border-top: 1px solid #dbdbdb;
+  padding: 0.25rem;
+}
+
 .navbar.is-mobile > .container {
   align-items: stretch;
   display: flex;

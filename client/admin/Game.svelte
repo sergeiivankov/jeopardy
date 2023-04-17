@@ -6,16 +6,6 @@
 
   export let id;
 
-  const rounds = [
-    'Раунд 1',
-    'Раунд 2',
-    'Раунд 3',
-    'Финал',
-    'Перестрелка 1',
-    'Перестрелка 2',
-    'Перестрелка 3'
-  ];
-
   let game = null;
   let roundSubjects = [];
   let subjectsQuestions = {};

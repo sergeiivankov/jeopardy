@@ -68,8 +68,12 @@ export default server => {
         state.screen = 'pause';
         state.screenData = screenData;
       }
+
       if(!socket.isGameOwner) {
-        state.playersOnline = Object.assign({}, state.playersOnline, { [socket.userId]: 0 });
+        state.playersOnline = Object.assign(
+          {}, gamesStates[socket.gameId].playersOnline, { [socket.userId]: 0 }
+        );
+        console.log(state.playersOnline);
       }
 
       if(Object.keys(state).length === 0) return;
@@ -79,14 +83,28 @@ export default server => {
 
     socket.join('game' + socket.gameId);
 
-    if(gamesStates[socket.gameId]) socket.emit('state', gamesStates[socket.gameId]);
+    let state;
+
+    if(gamesStates[socket.gameId]) state = gamesStates[socket.gameId];
     else {
-      const state = await getGameState(socket.gameId);
+      state = await getGameState(socket.gameId);
       gamesStates[socket.gameId] = state;
-      socket.emit('state', state);
     }
 
-    if(!socket.isGameOwner) return;
+    if(!socket.isGameOwner) {
+      state = Object.assign({}, state);
+      delete(state.log);
+    }
+
+    socket.emit('state', state)
+
+    if(!socket.isGameOwner) {
+      updateState(socket.gameId, {
+        playersOnline: Object.assign(
+          {}, gamesStates[socket.gameId].playersOnline, { [socket.userId]: 1 }
+        )
+      });
+    }
 
     socket.on('update-state', updatedState => {
       updateState(socket.gameId, updatedState);
