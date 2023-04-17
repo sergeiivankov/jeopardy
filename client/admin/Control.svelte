@@ -20,11 +20,8 @@
   });
 
   const onDisconnect = reason => {
-    if(reason === 'io server disconnect') socket.connect();
-    else {
-      dispatch('close');
-      alert('Соединение с сервером потеряно по причине: ' + reason);
-    }
+    dispatch('close');
+    alert('Соединение с сервером потеряно по причине: ' + reason);
   };
 
   socket.on('disconnect', onDisconnect);
