@@ -164,7 +164,7 @@
           <select on:change={ addUser }>
             <option value="">Добавить игрока</option>
             {#each data.users as user}
-              {#if !editUsers.users.includes(user.id)}
+              {#if !editUsers.users.includes(user.id) && data.userId !== user.id}
                 <option value={ user.id }>{ user.name }</option>
               {/if}
             {/each}

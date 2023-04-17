@@ -130,7 +130,7 @@
       </div>
     </div>
     {#each roundSubjects[roundIndex] as subject}
-      <div class="ml-5">
+      <div class="block ml-5">
         <div class="level">
           <div class="level-left">
             <div class="title is-5 mr-3 mb-0">{ subject.name }</div>
@@ -162,25 +162,19 @@
               </div>
               <div class="column is-5">
                 <b>Вопрос:</b><br>
-                {#if subjectsQuestions[subject.id][priceIndex].question_type === null}
-                  Не указан
-                {:else}
-                  {#if subjectsQuestions[subject.id][priceIndex].question_type === 0}
-                    { subjectsQuestions[subject.id][priceIndex].question }
-                  {/if}
-                  {#if subjectsQuestions[subject.id][priceIndex].question_type === 1}
-                    <img src="/storage/{ subjectsQuestions[subject.id][priceIndex].question_file }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].question_type] }" class="mt-2">
-                  {/if}
-                  {#if subjectsQuestions[subject.id][priceIndex].question_type === 2}
-                    <audio controls preload="none" class="mt-2" style="width:100%"
-                           src="/storage/{ subjectsQuestions[subject.id][priceIndex].question_file }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].question_type] }">
-                    </audio>
-                  {/if}
-                  {#if subjectsQuestions[subject.id][priceIndex].question_type === 3}
-                    <video controls preload="none" class="mt-2" style="width:100%"
-                           src="/storage/{ subjectsQuestions[subject.id][priceIndex].question_file }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].question_type] }">
-                    </video>
-                  {/if}
+                { subjectsQuestions[subject.id][priceIndex].question || 'Не указан' }
+                {#if subjectsQuestions[subject.id][priceIndex].question_type === 1}
+                  <img src="/storage/{ subjectsQuestions[subject.id][priceIndex].question_file }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].question_type] }" class="mt-2">
+                {/if}
+                {#if subjectsQuestions[subject.id][priceIndex].question_type === 2}
+                  <audio controls preload="none" class="mt-2" style="width:100%"
+                          src="/storage/{ subjectsQuestions[subject.id][priceIndex].question_file }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].question_type] }">
+                  </audio>
+                {/if}
+                {#if subjectsQuestions[subject.id][priceIndex].question_type === 3}
+                  <video controls preload="none" class="mt-2" style="width:100%"
+                          src="/storage/{ subjectsQuestions[subject.id][priceIndex].question_file }.{ data.QUESTIONS_TYPES_EXTENSIONS[subjectsQuestions[subject.id][priceIndex].question_type] }">
+                  </video>
                 {/if}
               </div>
               <div class="column is-5">

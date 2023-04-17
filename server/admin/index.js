@@ -44,6 +44,7 @@ router.get('/data', asyncHandler(async (req, res) => {
     MAX_ROUND_SUBJECTS_COUNT, QUESTIONS_TYPES_EXTENSIONS,
     REQUIRED_ROUND_SUBJECTS_COUNT, ROUND_PRICES, ROUND_NAMES
   };
+  data.userId = res.locals.userId;
   data.users = await getUsersData();
 
   res.json({ ok: true, res: data });

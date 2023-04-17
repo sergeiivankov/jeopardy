@@ -105,6 +105,7 @@ export const setGameParcipants = async (ownerId, id, data) => {
   if(!data.users || !Array.isArray(data.users)) return 'Не переданы идентификаторы игроков';
 
   data.users = data.users.map(id => parseInt(id, 10)).filter(id => Number.isInteger(id) && id > 0);
+  if(data.users.includes(ownerId)) return 'Нельзя добавить себя в игру';
 
   const game = await getGame(ownerId, id);
   if(typeof(game) === 'string') return game;
