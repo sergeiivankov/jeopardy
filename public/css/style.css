@@ -30,6 +30,17 @@ hr {
   text-decoration: none;
 }
 
+.link.disabled {
+  color: #7a7a7a !important;
+  cursor: not-allowed;
+}
+
+.link.disabled, .link.disabled:hover, .link.disabled:active, .link.disabled:focus {
+  color: #7a7a7a !important;
+  text-decoration: underline;
+}
+
+
 .lds-ellipsis {
   display: block;
   position: relative;

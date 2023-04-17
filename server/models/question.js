@@ -5,7 +5,6 @@ import { randomString } from '../helpers/common.js';
 import { storageExists, storageSave, storageDelete } from '../helpers/storage.js';
 import { validate } from '../helpers/validation.js';
 import { getSubjectByIdAndGame } from './subject.js';
-import e from 'express';
 
 const schemaUpdate = Joi.object({
   subject_id: Joi.number().required().integer().greater(0).messages({

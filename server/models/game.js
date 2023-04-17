@@ -3,9 +3,9 @@ import { validate, ruleId, ruleName } from '../helpers/validation.js';
 import { getSubjectsByGame, deleteSubject } from './subject.js';
 
 const schemaCreate = Joi.object(ruleName);
-const schemaUpdate = schemaCreate.append(ruleId);
+const schemaUpdate = schemaCreate.append(ruleId).unknown();
 
-export const checkGameOwner = async (ownerId, id) => {
+const checkGameOwner = async (ownerId, id) => {
   const gameExists = await DB.get(SQL`
     SELECT id FROM games WHERE id = ${id} AND owner_id = ${ownerId} LIMIT 1
   `);
@@ -28,7 +28,7 @@ export const getGame = async (ownerId, id) => {
   if(checkOwner !== true) return checkOwner;
 
   return await DB.get(SQL`
-    SELECT id, name FROM games WHERE id = ${id} AND owner_id = ${ownerId} LIMIT 1
+    SELECT id, name, announced FROM games WHERE id = ${id} AND owner_id = ${ownerId} LIMIT 1
   `);
 };
 
@@ -52,8 +52,9 @@ export const updateGame = async (ownerId, data) => {
   data = validate(schemaUpdate, data);
   if(typeof(data) === 'string') return data;
 
-  const checkOwner = await checkGameOwner(ownerId, data.id);
-  if(checkOwner !== true) return checkOwner;
+  const game = await getGame(ownerId, data.id);
+  if(typeof(game) === 'string') return game;
+  if(game.announced === 1) return 'Нельзя изменять анонсированную игру';
 
   const gameNameExists = await DB.get(SQL`
     SELECT id FROM games
@@ -86,8 +87,9 @@ export const setGameParcipants = async (ownerId, id, data) => {
 
   data.users = data.users.map(id => parseInt(id, 10)).filter(id => Number.isInteger(id) && id > 0);
 
-  const checkOwner = await checkGameOwner(ownerId, id);
-  if(checkOwner !== true) return checkOwner;
+  const game = await getGame(ownerId, id);
+  if(typeof(game) === 'string') return game;
+  if(game.announced === 1) return 'Нельзя изменять анонсированную игру';
 
   await DB.run(SQL`DELETE FROM games_participants WHERE game_id = ${id}`);
 
@@ -109,8 +111,9 @@ export const setGameParcipants = async (ownerId, id, data) => {
 export const deleteGame = async (ownerId, id) => {
   if(!id) return 'Не передан идентификатор игры';
 
-  const checkOwner = await checkGameOwner(ownerId, id);
-  if(checkOwner !== true) return checkOwner;
+  const game = await getGame(ownerId, id);
+  if(typeof(game) === 'string') return game;
+  if(game.announced === 1) return 'Нельзя изменять анонсированную игру';
 
   const subjects = await getSubjectsByGame(id);
   for(let subject of subjects) await deleteSubject(id, subject.id);

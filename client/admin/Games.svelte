@@ -97,21 +97,29 @@
             </td>
             <td class="is-narrow">
               <a href="#" class="link has-text-info"
-                 on:click|preventDefault={ () => openChangeUsers(game) }>
+                 class:disabled={ game.announced === 1 }
+                 on:click|preventDefault={ () => { if(game.announced === 0) openChangeUsers(game); } }>
                 Игроки
               </a>
             </td>
             <td class="is-narrow">
               <a href="#" class="link has-text-info"
-                on:click|preventDefault={ () => dispatch('edit', game.id) }>
+                 class:disabled={ game.announced === 1 }
+                 on:click|preventDefault={ () => { if(game.announced === 0) dispatch('edit', game.id); } }>
                 Редактировать вопросы
               </a>
             </td>
             <td class="is-narrow">
               <a href="#" class="link has-text-info mr-2"
-                on:click|preventDefault={ () => editGame = { ...game } }>Изменить</a>
+                 class:disabled={ game.announced === 1 }
+                 on:click|preventDefault={ () => { if(game.announced === 0) editGame = { ...game }; } }>
+                Изменить
+              </a>
               <a href="#" class="link has-text-danger"
-                on:click|preventDefault={ () => deleteGame(game.id) }>Удалить</a>
+                 class:disabled={ game.announced === 1 }
+                 on:click|preventDefault={ () => { if(game.announced === 0) deleteGame(game.id); } }>
+                Удалить
+              </a>
             </td>
           </tr>
         {/each}
