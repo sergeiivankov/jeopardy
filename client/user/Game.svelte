@@ -1,9 +1,12 @@
 <script>
-  import { onDestroy } from 'svelte';
+  import { onDestroy, createEventDispatcher } from 'svelte';
   import { token } from '../common/auth.js';
+  import { applyFlat } from '../common/helpers.js';
 
   export let game = {};
   let state = null;
+
+  const dispatch = createEventDispatcher();
 
   const socket = io({
     autoConnect: false,
@@ -18,7 +21,9 @@
 
   const onDisconnect = reason => {
     dispatch('close');
-    alert('Соединение с сервером потеряно по причине: ' + reason);
+    if(reason !== 'io server disconnect') {
+      alert('Соединение с сервером потеряно по причине: ' + reason);
+    }
   };
 
   socket.on('disconnect', onDisconnect);
@@ -40,5 +45,13 @@
 </script>
 
 <div class="game">
-  { game.name }
+  {#if state !== null}
+    {#if state.screen === 'pause'}
+      <div class="game" style="display:flex;justify-content:center;align-items:center">
+        Игра на паузе
+      </div>
+    {:else}
+      123
+    {/if}
+  {/if}
 </div>

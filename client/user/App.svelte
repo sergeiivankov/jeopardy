@@ -76,7 +76,7 @@
 {/if}
 
 {#if game !== null}
-  <Game game={ game } on:close={ () => game = null }/>
+  <Game game={ game } on:close={ () => location.reload() }/>
 {/if}
 
 {#if $loadingTimes > 0}

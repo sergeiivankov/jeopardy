@@ -48,8 +48,6 @@
       updateState.screen = state.screenData.prevScreen;
       updateState.screenData = state.screenData.prevScreenData;
     } else {
-
-
       const screenData = {
         prevScreen: state.screen,
         prevScreenData: state.screenData

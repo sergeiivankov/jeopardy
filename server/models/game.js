@@ -22,7 +22,7 @@ export const getPlayerGames = async userId => {
     SELECT G.id, G.name, O.name AS owner_name FROM games_participants AS GP
     LEFT JOIN games AS G ON G.id = GP.game_id
     LEFT JOIN users AS O ON O.id = G.owner_id
-    WHERE GP.user_id = ${userId}
+    WHERE GP.user_id = ${userId} AND G.announced = 1
     ORDER BY G.name
   `);
 };
@@ -201,6 +201,7 @@ export const toggleGameAnnounced = async (ownerId, id) => {
     `);
   } else {
     await DB.run(SQL`UPDATE games SET announced = 0, state = NULL WHERE id = ${id}`);
+    IO.in('game' + id).disconnectSockets(true);
   }
 
   return true;
