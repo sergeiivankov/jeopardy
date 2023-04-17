@@ -19,6 +19,10 @@ export const getUserIdByToken = async token => {
   return user?.id;
 };
 
+export const getUserByToken = async token => {
+  return await DB.get(SQL`SELECT id, name FROM users WHERE password = ${token} LIMIT 1`);
+};
+
 export const getUsers = async () => {
   return await DB.all('SELECT id, name, password FROM users');
 };

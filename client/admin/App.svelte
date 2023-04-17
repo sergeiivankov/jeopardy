@@ -61,39 +61,41 @@
 	});
 </script>
 
-{#if page == 'auth'}
-  <Auth on:authorized={ onAuthorized }/>
-{:else}
-  <div class="navbar is-dark">
-    <div class="container">
-      <div class="navbar-menu">
-        <div class="navbar-start">
-          <a href="#" class="navbar-item" class:is-active={ page == 'games' || page == 'gameEdit' }
-             on:click|preventDefault={ () => page = 'games' }>Игры</a>
-          {#if $isAdmin}
-            <a href="#" class="navbar-item" class:is-active={ page == 'users' }
-               on:click|preventDefault={ () => page = 'users' }>Пользователи</a>
-          {/if}
-        </div>
-        <div class="navbar-end">
-          <a href="/" class="navbar-item">В раздел игрока</a>
-          <a href="#" class="navbar-item" on:click|preventDefault={ logout }>Выйти</a>
+{#if page !== null}
+  {#if page === 'auth'}
+    <Auth on:authorized={ onAuthorized }/>
+  {:else}
+    <div class="navbar is-dark">
+      <div class="container">
+        <div class="navbar-menu">
+          <div class="navbar-start">
+            <a href="#" class="navbar-item" class:is-active={ page == 'games' || page == 'gameEdit' }
+              on:click|preventDefault={ () => page = 'games' }>Игры</a>
+            {#if $isAdmin}
+              <a href="#" class="navbar-item" class:is-active={ page == 'users' }
+                on:click|preventDefault={ () => page = 'users' }>Пользователи</a>
+            {/if}
+          </div>
+          <div class="navbar-end">
+            <a href="/" class="navbar-item">В раздел игрока</a>
+            <a href="#" class="navbar-item" on:click|preventDefault={ logout }>Выйти</a>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="container mt-5">
-    {#if page == 'games'}
-      <Games on:edit={ editGame } on:control={ e => controlGame = e.detail }/>
-    {/if}
-    {#if page == 'gameEdit'}
-      <Game id={ editGameId }/>
-    {/if}
-    {#if page == 'users'}
-      <Users/>
-    {/if}
-  </div>
+    <div class="container mt-5">
+      {#if page == 'games'}
+        <Games on:edit={ editGame } on:control={ e => controlGame = e.detail }/>
+      {/if}
+      {#if page == 'gameEdit'}
+        <Game id={ editGameId }/>
+      {/if}
+      {#if page == 'users'}
+        <Users/>
+      {/if}
+    </div>
+  {/if}
 {/if}
 
 {#if controlGame !== null}
