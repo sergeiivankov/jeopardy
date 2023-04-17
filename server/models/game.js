@@ -70,16 +70,16 @@ export const toggleGameAnnounced = async (ownerId, id) => {
   if(game.announced === 0) {
     const subjects = await getSubjectsByGame(id);
 
-    const roundsCounts = [0, 0, 0, 0, 0, 0, 0];
+    const roundsSubjectsCounts = [0, 0, 0, 0, 0, 0, 0];
     for(let subject of subjects) {
-      roundsCounts[subject.round]++;
+      roundsSubjectsCounts[subject.round]++;
     }
 
     const errors = [];
 
-    for(let index in roundsCounts) {
-      if(roundsCounts[index] < REQUIRED_ROUND_SUBJECTS_COUNT[index]) {
-        errors.push(`${ROUND_NAMES[index]} содержит ${roundsCounts[index]} из ${REQUIRED_ROUND_SUBJECTS_COUNT[index]} требуемых тем`);
+    for(let index in roundsSubjectsCounts) {
+      if(roundsSubjectsCounts[index] < REQUIRED_ROUND_SUBJECTS_COUNT[index]) {
+        errors.push(`${ROUND_NAMES[index]} содержит ${roundsSubjectsCounts[index]} из ${REQUIRED_ROUND_SUBJECTS_COUNT[index]} требуемых тем`);
       }
     }
 
@@ -93,9 +93,48 @@ export const toggleGameAnnounced = async (ownerId, id) => {
     }
 
     if(errors.length) return errors.join('\n');
+
+    const players = await DB.all(SQL`
+      SELECT U.id, U.name FROM games_participants AS GP
+      LEFT JOIN users AS U ON U.id = GP.user_id
+      WHERE GP.game_id = ${id}
+    `);
+    if(players.length < 2) return 'В игре должны быть минимум 2 игрока';
+
+    const playersAssoc = {};
+    for(let player of players) playersAssoc[player.id] = player.name;
+
+    const initState = {
+      round: 0,
+      screen: 'pause',
+      screenData: {},
+      players: playersAssoc,
+      activePlayer: players[Math.floor(Math.random() * players.length)].id
+    };
+
+    const availableQuestions = [];
+    for(let roundIndex in roundsSubjectsCounts) {
+      const subjectsCount = roundsSubjectsCounts[roundIndex];
+      if(subjectsCount === 0) break;
+
+      availableQuestions.push([]);
+
+      for(let subjectIndex = 0; subjectIndex < subjectsCount; subjectIndex++) {
+        const needQuestionCount = roundIndex === '3' ? 1 : 5;
+        availableQuestions[roundIndex].push( Array(needQuestionCount).fill(1))
+      }
+    }
+
+    initState.availableQuestions = availableQuestions;
+
+    await DB.run(SQL`
+      UPDATE games SET announced = 1, state = ${JSON.stringify(initState)} WHERE id = ${id}
+    `);
+  } else {
+    await DB.run(SQL`UPDATE games SET announced = 0, state = NULL WHERE id = ${id}`);
   }
 
-  await DB.run(SQL`UPDATE games SET announced = ${game.announced ? 0 : 1} WHERE id = ${id}`);
+
 
   return true;
 };
