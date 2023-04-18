@@ -9,7 +9,7 @@ function traverseAndFlatten(currentNode, target, flattenedKey) {
       }
 
       var value = currentNode[key];
-      if (typeof value === "object") {
+      if (typeof value === "object" && !Array.isArray(value)) {
         traverseAndFlatten(value, target, newKey);
       } else {
         target[newKey] = value;

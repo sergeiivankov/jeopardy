@@ -1,6 +1,7 @@
 <script>
   import { onDestroy, createEventDispatcher } from 'svelte';
   import { token } from '../common/auth.js';
+  import { data } from '../common/data.js';
   import { applyFlat } from '../common/helpers.js';
 
   export let game = {};
@@ -54,6 +55,25 @@
           <div class="scores-value">{ state.scores[userId] }</div>
         </div>
       {/each}
+    </div>
+
+    <div class="game-main">
+      <table class="table is-bordered is-fullwidth">
+        <tbody>
+          {#each Object.entries(state.availableQuestions[state.round]) as [subjectId, availableQuestions]}
+            <tr style="height:50px">
+              <td style="vertical-align:middle">{ state.subjectsNames[subjectId] }</td>
+              {#each availableQuestions as isAvailable, index}
+                <td class="has-text-weight-bold has-text-centered" style="vertical-align:middle">
+                  {#if isAvailable === 1}
+                    { data.ROUND_PRICES[state.round][index] }
+                  {/if}
+                </td>
+              {/each}
+            </tr>
+          {/each}
+        </tbody>
+      </table>
     </div>
 
     {#if state.screen === 'pause'}

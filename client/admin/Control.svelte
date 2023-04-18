@@ -2,15 +2,32 @@
   import { onDestroy, createEventDispatcher } from 'svelte';
   import Modal from '../common/Modal.svelte';
   import { token } from '../common/auth.js';
+  import { data } from '../common/data.js';
   import { applyFlat } from '../common/helpers.js';
+  import { get } from '../common/request.js';
 
   export let game = {};
+  let subjectsQuestions = null;
   let state = null;
   let editPlayer = null;
 
   let inputScore;
 
   const dispatch = createEventDispatcher();
+
+  const load = async () => {
+    const fullGame = await get('/games/' + game.id);
+    if(!fullGame) return;
+
+    subjectsQuestions = {};
+    fullGame.questions.forEach(question => {
+      if(!subjectsQuestions[question.subject_id]) subjectsQuestions[question.subject_id] = [];
+      subjectsQuestions[question.subject_id].push(question);
+    });
+    subjectsQuestions = {...subjectsQuestions};
+
+    console.log(subjectsQuestions);
+  };
 
   const socket = io({
     autoConnect: false,
@@ -32,6 +49,8 @@
 
   socket.on('state', actualState => {
     state = actualState;
+
+    console.log(state);
   });
 
   socket.on('update-state', updatedState => {
@@ -81,13 +100,24 @@
     updateState({ ['scores.' + editPlayer]: state.scores[editPlayer] + value });
     editPlayer = null;
   };
+
+  const setQuestionState = (subjectId, index, value) => {
+    if(!confirm(value ? 'Точно вернуть вопрос?' : 'Точно убрать вопрос?')) return;
+
+    const availableQuestions = [...state.availableQuestions];
+    availableQuestions[state.round][subjectId][index] = value;
+
+    updateState({ availableQuestions: availableQuestions });
+  };
+
+  load();
 </script>
 
 <div class="game">
-  {#if state !== null}
+  {#if state !== null && subjectsQuestions !== null}
     <div class="level">
       <div class="level-left">
-        <div class="title mb-0 mr-5">{ game.name }</div>
+        <div class="title mb-0 mr-5">{ game.name } - { data.ROUND_NAMES[state.round] }</div>
         <button class="button"
                 class:is-success={ state.screen === 'pause' }
                 on:click={ togglePause }>
@@ -118,6 +148,40 @@
         </div>
       {/each}
     </div>
+    <table class="table is-bordered is-hoverable is-fullwidth">
+      <tbody>
+        {#each Object.entries(state.availableQuestions[state.round]) as [subjectId, availableQuestions]}
+          <tr style="height:60px">
+            <td style="vertical-align:middle">{ state.subjectsNames[subjectId] }</td>
+            {#each availableQuestions as isAvailable, index}
+              <td style="vertical-align:middle;text-align:center">
+                {#if isAvailable === 1}
+                  <a href="#" class="link has-text-danger is-size-7 mr-4 is-inline-block"
+                     style="width:46px"
+                     on:click={ () => setQuestionState(subjectId, index, 0) }>
+                    Убрать
+                  </a>
+                  <span class="has-text-weight-bold mr-4">
+                    { data.ROUND_PRICES[state.round][index] }
+                  </span>
+                  <a href="#" class="link has-text-info">Выбрать</a>
+                {:else}
+                  <a href="#" class="link has-text-danger is-size-7 mr-4 is-inline-block"
+                     style="width:46px"
+                     on:click={ () => setQuestionState(subjectId, index, 1) }>
+                    Вернуть
+                  </a>
+                  <span class="has-text-weight-bold mr-4">
+                    { data.ROUND_PRICES[state.round][index] }
+                  </span>
+                  <a href="#" style="opacity:0" on:click|preventDefault>Выбрать</a>
+                {/if}
+              </td>
+            {/each}
+          </tr>
+        {/each}
+      </tbody>
+    </table>
   {/if}
 
   {#if editPlayer !== null}

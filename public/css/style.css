@@ -56,10 +56,21 @@ hr {
   }
 }
 
+.game-main {
+  font-size: 12px;
+  padding: 0.5rem;
+  border-bottom: 1px solid #dbdbdb;
+  height: 380px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .scores {
   display: flex;
   padding: 0.5rem;
   font-size: 12px;
+  border-bottom: 1px solid #dbdbdb;
 }
 
 .scores-item {
@@ -89,6 +100,18 @@ hr {
 .scores-value {
   border-top: 1px solid #dbdbdb;
   padding: 0.25rem;
+}
+
+@media screen and (min-width: 1024px) {
+  .game-main {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .scores {
+    padding: 1rem;
+    font-size: 1rem;
+  }
 }
 
 .navbar.is-mobile > .container {
