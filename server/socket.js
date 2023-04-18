@@ -7,10 +7,10 @@ const gamesStates = {};
 
 let io;
 
-const updateState = (gameId, state) => {
+const updateState = (gameId, state, isEmit = true) => {
   gamesStates[gameId] = applyFlat(gamesStates[gameId], state);
 
-  io.to('game' + gameId).emit('update-state', state);
+  if(isEmit) io.to('game' + gameId).emit('update-state', state);
   updateGameState(gameId, state);
 };
 
@@ -73,7 +73,6 @@ export default server => {
         state.playersOnline = Object.assign(
           {}, gamesStates[socket.gameId].playersOnline, { [socket.userId]: 0 }
         );
-        console.log(state.playersOnline);
       }
 
       if(Object.keys(state).length === 0) return;
@@ -84,10 +83,18 @@ export default server => {
     socket.join('game' + socket.gameId);
 
     let state;
+    let updatedState = null;
 
     if(gamesStates[socket.gameId]) state = gamesStates[socket.gameId];
     else {
       state = await getGameState(socket.gameId);
+
+      updatedState = { playersOnline: {} };
+      for(let userId in state.playersOnline) {
+        updatedState.playersOnline[userId] = 0;
+        state.playersOnline[userId] = 0;
+      }
+
       gamesStates[socket.gameId] = state;
     }
 
@@ -96,7 +103,8 @@ export default server => {
       delete(state.log);
     }
 
-    socket.emit('state', state)
+    socket.emit('state', state);
+    if(updatedState) updateState(socket.gameId, updatedState);
 
     if(!socket.isGameOwner) {
       updateState(socket.gameId, {
