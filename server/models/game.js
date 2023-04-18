@@ -62,17 +62,31 @@ export const getGameState = async id => {
   return JSON.parse(game.state);
 };
 
+let updateGameStatePromise = null;
+
 export const updateGameState = async (id, newState) => {
+  if(updateGameStatePromise) {
+    await updateGameStatePromise;
+    await updateGameState(id, newState);
+    return;
+  }
+
+  let resolveUpdateGameStatePromise;
+  updateGameStatePromise = new Promise(resolve => resolveUpdateGameStatePromise = resolve);
+
   const game = await DB.get(SQL`
     SELECT state FROM games WHERE id = ${id} LIMIT 1
   `);
-  if(!game) return;
+  if(game) {
+    const state = applyFlat(JSON.parse(game.state), newState);
 
-  const state = applyFlat(JSON.parse(game.state), newState);
+    await DB.run(SQL`
+      UPDATE games SET state = ${JSON.stringify(state)} WHERE id = ${id}
+    `);
+  }
 
-  await DB.run(SQL`
-    UPDATE games SET state = ${JSON.stringify(state)} WHERE id = ${id}
-  `);
+  resolveUpdateGameStatePromise();
+  updateGameStatePromise = null;
 };
 
 export const createGame = async (ownerId, data) => {

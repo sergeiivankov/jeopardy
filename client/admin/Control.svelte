@@ -69,6 +69,11 @@
     socket.emit('update-state', updatedState);
   };
 
+  const addLog = log => {
+    socket.emit('add-log', log);
+    state.log = [log, ...state.log];
+  };
+
   const togglePause = () => {
     const updatedState = {};
 
@@ -89,6 +94,7 @@
   };
 
   const setActivePlayer = () => {
+    addLog(`Активный игрок: ${state.players[state.activePlayer]} -> ${state.players[editPlayer]}`);
     updateState({ activePlayer: editPlayer });
     editPlayer = null;
   };
@@ -98,12 +104,28 @@
     if(value < 1) return alert('В поле должно быть положительное число');
     value = value * sign;
 
-    updateState({ ['scores.' + editPlayer]: state.scores[editPlayer] + value });
+    const newScore = state.scores[editPlayer] + value;
+
+    addLog(
+      `Изменение счета ${state.players[editPlayer]}: ${state.scores[editPlayer]} -> ${newScore}`
+    );
+    updateState({ ['scores.' + editPlayer]: newScore });
     editPlayer = null;
   };
 
   const setQuestionState = (subjectId, index, value) => {
     if(!confirm(value ? 'Точно вернуть вопрос?' : 'Точно убрать вопрос?')) return;
+
+    if(value) {
+      addLog(
+        `Добавлен вопрос: ${state.subjectsNames[subjectId]} за ${data.ROUND_PRICES[state.round][index]}`
+      );
+    } else {
+      addLog(
+        `Удален вопрос: ${state.subjectsNames[subjectId]} за ${data.ROUND_PRICES[state.round][index]}`
+      );
+    }
+
 
     const availableQuestions = [...state.availableQuestions];
     availableQuestions[state.round][subjectId][index] = value;
@@ -113,6 +135,10 @@
 
   const showQuestion = (subjectId, index) => {
     displayQuestion = subjectsQuestions[subjectId][index];
+  };
+
+  const selectQuestion = (subjectId, index) => {
+
   };
 
   load();
@@ -182,7 +208,10 @@
                      on:click|preventDefault={ () => showQuestion(subjectId, index) }>
                     { data.ROUND_PRICES[state.round][index] }
                   </a>
-                  <a href="#" class="link has-text-info">Выбрать</a>
+                  <a href="#" class="link has-text-info"
+                     on:click|preventDefault={ () => selectQuestion(subjectId, index) }>
+                    Выбрать
+                  </a>
                 {:else}
                   <a href="#" class="link has-text-danger is-size-7 mr-4 is-inline-block"
                      style="width:46px"
@@ -201,6 +230,12 @@
         {/each}
       </tbody>
     </table>
+
+    <div class="block">
+      {#each state.log as log}
+        { log }<br>
+      {/each}
+    </div>
   {/if}
 
   {#if editPlayer !== null}

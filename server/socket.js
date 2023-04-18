@@ -7,10 +7,10 @@ const gamesStates = {};
 
 let io;
 
-const updateState = (gameId, state, isEmit = true) => {
+const updateState = (gameId, state) => {
   gamesStates[gameId] = applyFlat(gamesStates[gameId], state);
 
-  if(isEmit) io.to('game' + gameId).emit('update-state', state);
+  io.to('game' + gameId).emit('update-state', state);
   updateGameState(gameId, state);
 };
 
@@ -116,6 +116,12 @@ export default server => {
 
     socket.on('update-state', updatedState => {
       updateState(socket.gameId, updatedState);
+    });
+
+    socket.on('add-log', log => {
+      if(!socket.isGameOwner) return;
+      gamesStates[socket.gameId].log = [log, ...gamesStates[socket.gameId].log];
+      updateGameState(socket.gameId, { log: gamesStates[socket.gameId].log });
     });
   });
 
