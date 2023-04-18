@@ -10,6 +10,7 @@
   let subjectsQuestions = null;
   let state = null;
   let editPlayer = null;
+  let displayQuestion = null;
 
   let inputScore;
 
@@ -110,6 +111,10 @@
     updateState({ availableQuestions: availableQuestions });
   };
 
+  const showQuestion = (subjectId, index) => {
+    displayQuestion = subjectsQuestions[subjectId][index];
+  };
+
   load();
 </script>
 
@@ -173,9 +178,10 @@
                      on:click|preventDefault={ () => setQuestionState(subjectId, index, 0) }>
                     Убрать
                   </a>
-                  <span class="has-text-weight-bold mr-4">
+                  <a href="#" class="is-size-5 has-text-weight-bold mr-4"
+                     on:click|preventDefault={ () => showQuestion(subjectId, index) }>
                     { data.ROUND_PRICES[state.round][index] }
-                  </span>
+                  </a>
                   <a href="#" class="link has-text-info">Выбрать</a>
                 {:else}
                   <a href="#" class="link has-text-danger is-size-7 mr-4 is-inline-block"
@@ -183,9 +189,10 @@
                      on:click|preventDefault={ () => setQuestionState(subjectId, index, 1) }>
                     Вернуть
                   </a>
-                  <span class="has-text-weight-bold mr-4">
+                  <a href="#" class="is-size-5 has-text-weight-bold mr-4"
+                     on:click|preventDefault={ () => showQuestion(subjectId, index) }>
                     { data.ROUND_PRICES[state.round][index] }
-                  </span>
+                  </a>
                   <a href="#" style="opacity:0" on:click|preventDefault>Выбрать</a>
                 {/if}
               </td>
@@ -220,6 +227,41 @@
       <div slot="footer">
         <button class="button is-warning" on:click={ setActivePlayer }>
           Сделать активным игроком
+        </button>
+      </div>
+    </Modal>
+  {/if}
+
+  {#if displayQuestion !== null}
+    <Modal title="Отображение вопроса" on:close={ () => displayQuestion = null }>
+      <div slot="body">
+        <div class="field">
+          <b>Вопрос:</b><br>
+          { displayQuestion.question }
+        </div>
+        <div class="field">
+          {#if displayQuestion.question_type === 1}
+            <img src="/storage/{ displayQuestion.question_file }.{ data.QUESTIONS_TYPES_EXTENSIONS[displayQuestion.question_type] }">
+          {/if}
+          {#if displayQuestion.question_type === 2}
+            <audio controls preload="none" style="width:100%"
+                    src="/storage/{ displayQuestion.question_file }.{ data.QUESTIONS_TYPES_EXTENSIONS[displayQuestion.question_type] }">
+            </audio>
+          {/if}
+          {#if displayQuestion.question_type === 3}
+            <video controls preload="none" class="mt-2" style="width:100%"
+                    src="/storage/{ displayQuestion.question_file }.{ data.QUESTIONS_TYPES_EXTENSIONS[displayQuestion.question_type] }">
+            </video>
+          {/if}
+        </div>
+        <div class="field">
+          <b>Ответ:</b><br>
+          { displayQuestion.answer }
+        </div>
+      </div>
+      <div slot="footer">
+        <button class="button" on:click={ () => displayQuestion = null }>
+          Закрыть
         </button>
       </div>
     </Modal>

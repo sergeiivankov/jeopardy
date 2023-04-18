@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import asyncHandler from 'express-async-handler';
 import { sendHtmlFile } from '../helpers/common.js';
-import { ROUND_PRICES, ROUND_NAMES } from '../helpers/consts.js';
+import { ROUND_PRICES, ROUND_NAMES, QUESTIONS_TYPES_EXTENSIONS } from '../helpers/consts.js';
 import { getPlayerGames } from '../models/game.js';
 import { getUserByToken } from '../models/user.js';
 
@@ -27,7 +27,7 @@ router.get('/check', (req, res) => {
 });
 
 router.get('/data', asyncHandler(async (req, res) => {
-  const data = { ROUND_PRICES, ROUND_NAMES };
+  const data = { ROUND_PRICES, ROUND_NAMES, QUESTIONS_TYPES_EXTENSIONS };
   data.userId = res.locals.userId;
   data.userName = res.locals.userName;
 
