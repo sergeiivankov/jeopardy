@@ -118,14 +118,26 @@
     <div class="level">
       <div class="level-left">
         <div class="title mb-0 mr-5">{ game.name } - { data.ROUND_NAMES[state.round] }</div>
-        <button class="button"
+        {#if state.round > 0}
+          <button class="button mr-5"
+                  on:click={ () => updateState({ round: state.round - 1 }) }>
+            Предыдущий раунд
+          </button>
+        {/if}
+        {#if Object.keys(state.availableQuestions[state.round + 1] || {}).length}
+          <button class="button mr-5"
+                  on:click={ () => updateState({ round: state.round + 1 }) }>
+            Следующий раунд
+          </button>
+        {/if}
+      </div>
+      <div class="level-right">
+        <button class="button mr-5"
                 class:is-success={ state.screen === 'pause' }
                 on:click={ togglePause }>
           { state.screen === 'pause' ? 'Продолжить' : 'На паузу' }
         </button>
-      </div>
-      <div class="level-right">
-        <button class="button" on:click={ () => dispatch('close') }>Закрыть</button>
+        <button class="button is-danger" on:click={ () => dispatch('close') }>Закрыть</button>
       </div>
     </div>
     <div class="columns">
@@ -158,7 +170,7 @@
                 {#if isAvailable === 1}
                   <a href="#" class="link has-text-danger is-size-7 mr-4 is-inline-block"
                      style="width:46px"
-                     on:click={ () => setQuestionState(subjectId, index, 0) }>
+                     on:click|preventDefault={ () => setQuestionState(subjectId, index, 0) }>
                     Убрать
                   </a>
                   <span class="has-text-weight-bold mr-4">
@@ -168,7 +180,7 @@
                 {:else}
                   <a href="#" class="link has-text-danger is-size-7 mr-4 is-inline-block"
                      style="width:46px"
-                     on:click={ () => setQuestionState(subjectId, index, 1) }>
+                     on:click|preventDefault={ () => setQuestionState(subjectId, index, 1) }>
                     Вернуть
                   </a>
                   <span class="has-text-weight-bold mr-4">

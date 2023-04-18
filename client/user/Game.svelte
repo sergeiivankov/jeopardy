@@ -58,6 +58,7 @@
     </div>
 
     <div class="game-main">
+      <div class="title is-4 has-text-centered mb-4">{ data.ROUND_NAMES[state.round] }</div>
       <table class="table is-bordered is-fullwidth">
         <tbody>
           {#each Object.entries(state.availableQuestions[state.round]) as [subjectId, availableQuestions]}
