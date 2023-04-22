@@ -235,7 +235,7 @@
             <label class="file-label">
               <input class="file-input" type="file" bind:this={ questionFileInput }
                       on:change={ e => editQuestion.questionFileName = e.target.files[0].name }
-                      accept=".{ data.QUESTIONS_TYPES_EXTENSIONS[editQuestion.question_type] }">
+                      accept=".{ editQuestion.question_type !== '1' ? data.QUESTIONS_TYPES_EXTENSIONS[editQuestion.question_type] : data.QUESTIONS_TYPES_EXTENSIONS[editQuestion.question_type] + ',.jpg,.jpeg' }">
               <div class="file-cta">
                 <div class="file-label">Выбрать файл</div>
               </div>
