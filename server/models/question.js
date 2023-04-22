@@ -88,7 +88,7 @@ export const updateQuestion = async (gameId, data, files) => {
 
       if(data.question_type === 1) {
         file.buffer = await sharp(file.buffer)
-          .resize({ width: 960, height: 960, fit: 'inside' })
+          .resize({ width: 640, height: 640, fit: 'inside' })
           .png({ compressionLevel: 9 })
           .toBuffer()
       }
