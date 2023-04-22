@@ -9,6 +9,7 @@ const plugins = [
       if(warning.code === 'a11y-missing-attribute') return;
       if(warning.code === 'a11y-media-has-caption') return;
       if(warning.code === 'a11y-missing-content') return;
+      if(warning.code === 'a11y-label-has-associated-control') return;
       handler(warning);
     }
   }),

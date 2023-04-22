@@ -53,7 +53,14 @@ export const getGameRole = async (userId, gameId) => {
   return 'player';
 };
 
+let updateGameStatePromise = null;
+
 export const getGameState = async id => {
+  if(updateGameStatePromise) {
+    await updateGameStatePromise;
+    return await getGameState(id);
+  }
+
   const game = await DB.get(SQL`
     SELECT state FROM games WHERE id = ${id} LIMIT 1
   `);
@@ -61,8 +68,6 @@ export const getGameState = async id => {
 
   return JSON.parse(game.state);
 };
-
-let updateGameStatePromise = null;
 
 export const updateGameState = async (id, newState) => {
   if(updateGameStatePromise) {
@@ -175,12 +180,10 @@ export const toggleGameAnnounced = async (ownerId, id) => {
     }
 
     const initState = {
+      isPause: true,
       round: 0,
-      screen: 'pause',
-      screenData: {
-        prevScreen: 'table',
-        prevScreenData: {}
-      },
+      screen: 'table',
+      screenData: {},
       players: playersAssoc,
       playersOnline: playersOnline,
       scores: scores,

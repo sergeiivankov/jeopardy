@@ -44,6 +44,7 @@ hr {
   z-index: 999;
   background-color: #f5f5f5;
   padding: 1.5rem;
+  overflow: auto;
 }
 
 .game.is-player {
@@ -63,7 +64,13 @@ hr {
   height: 380px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.game-info {
+  font-size: 12px;
+  padding: 0.5rem;
 }
 
 .scores {
@@ -104,6 +111,11 @@ hr {
 
 @media screen and (min-width: 1024px) {
   .game-main {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .game-info {
     padding: 1rem;
     font-size: 1rem;
   }

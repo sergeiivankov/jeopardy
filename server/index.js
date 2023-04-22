@@ -22,7 +22,14 @@ app.enable('case sensitive routing');
 app.enable('strict routing');
 
 app.use(logger);
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      imgSrc: ["'self'", "blob:"],
+      mediaSrc: ["'self'", "blob:"]
+    }
+  }
+}));
 app.use(strictRoutes);
 hideDirectStatic(app);
 app.use(compression());
